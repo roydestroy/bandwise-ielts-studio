@@ -1,0 +1,1 @@
+declare namespace Cloudflare { interface Env { DB?:D1Database; BUCKET?:R2Bucket; OPENAI_API_KEY?:string; PROVIDER_ENCRYPTION_KEY?:string; OPENAI_TEXT_MODEL?:string; OPENAI_AUDIO_MODEL?:string; ACCESS_TEAM_DOMAIN?:string; ACCESS_AUD?:string; LOCAL_DEV_EMAIL?:string; } }

@@ -1,0 +1,11 @@
+import {fileURLToPath} from 'node:url';
+import './prepare-pdf-assets.mjs';
+const [command,...args]=process.argv.slice(2);
+if(!['dev','build'].includes(command))throw new Error('Use dev or build.');
+process.env.WRANGLER_SEND_METRICS='false';
+process.env.WRANGLER_LOG_PATH='.wrangler/logs';
+process.env.WRANGLER_REGISTRY_PATH='.wrangler/registry';
+process.env.CLOUDFLARE_CF_FETCH_ENABLED='false';
+const cli=new URL('../node_modules/vinext/dist/cli.js',import.meta.url);
+process.argv=[process.execPath,fileURLToPath(cli),command,...args];
+await import(cli.href);

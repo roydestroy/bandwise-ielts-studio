@@ -1,0 +1,4 @@
+# Use npm run setup:local to generate an ignored .dev.vars with a fresh local key.
+# LOCAL_DEV_EMAIL is honored only by the development server, never production.
+LOCAL_DEV_EMAIL=teacher@example.test
+PROVIDER_ENCRYPTION_KEY=

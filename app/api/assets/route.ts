@@ -1,0 +1,5 @@
+import {getTeacher} from '@/app/access-auth';
+import {database,bucket} from '@/lib/storage';
+import {Assessment} from '@/lib/ielts';
+export const dynamic='force-dynamic';
+export async function GET(req:Request){const user=await getTeacher();if(!user)return new Response('Sign in required',{status:401});const url=new URL(req.url);const id=url.searchParams.get('id');const key=url.searchParams.get('key');const row=await database().prepare('SELECT data FROM assessments WHERE id = ? AND owner = ?').bind(id,user.userId).first<{data:string}>();if(!row)return new Response('Not found',{status:404});const a=JSON.parse(row.data) as Assessment;const asset=a.assets.find(f=>f.key===key);if(!asset)return new Response('Not found',{status:404});const obj=await bucket().get(asset.key);if(!obj)return new Response('Not found',{status:404});return new Response(obj.body,{headers:{'Content-Type':asset.type,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Disposition':(url.searchParams.get('download')?'attachment':'inline')+'; filename*=UTF-8\'\''+encodeURIComponent(asset.name)}});}

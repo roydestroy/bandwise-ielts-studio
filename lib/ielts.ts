@@ -1,0 +1,15 @@
+import {z} from 'zod';
+export const taskTypes=['Writing Task 1','Writing Task 2','Speaking — full test','Speaking — Part 1','Speaking — Part 2','Speaking — Part 3'] as const;
+export const tracks=['Academic','General Training'] as const;
+export const criteriaFor=(task:string)=>task.startsWith('Speaking')?['Fluency and coherence','Lexical resource','Grammatical range and accuracy','Pronunciation']:[task==='Writing Task 1'?'Task achievement':'Task response','Coherence and cohesion','Lexical resource','Grammatical range and accuracy'];
+export const bandSchema=z.number().min(0).max(9).multipleOf(.5);
+export const criterionSchema=z.object({name:z.string().max(100),band:bandSchema.nullable(),evidence:z.string().max(3000),advice:z.string().max(3000)});
+export const resultSchema=z.object({criteria:z.array(criterionSchema).length(4),summary:z.string().max(5000),strengths:z.array(z.string().max(1000)).max(8),priorities:z.array(z.string().max(1000)).max(8),limitations:z.array(z.string().max(1000)).max(8)});
+export type AssessmentResult=z.infer<typeof resultSchema>;
+export type Student={id:string;name:string;target:number;track:string;created_at:string};
+export type Asset={key:string;name:string;type:string;size:number;role:'submission'|'prompt'};
+export type Assessment={id:string;student_id:string;task:string;track:string;title:string;prompt:string;transcript:string;assets:Asset[];result:AssessmentResult|null;teacher_result:AssessmentResult|null;notes:string;status:string;confirmed:boolean;created_at:string;version:number;model?:string;rubric_date?:string};
+export const average=(r:AssessmentResult|null)=>r&&r.criteria.every(c=>c.band!==null)?r.criteria.reduce((a,c)=>a+(c.band??0),0)/4:null;
+export const displayBand=(n:number|null|undefined)=>n==null?'—':(Math.round(n*2)/2).toFixed(1);
+export const blankResult=(task:string):AssessmentResult=>({criteria:criteriaFor(task).map(name=>({name,band:null,evidence:'',advice:''})),summary:'',strengths:[],priorities:[],limitations:[]});
+export const rubricLinks={writing:'https://ielts.org/cdn/ielts-guides/ielts-writing-band-descriptors.pdf',speaking:'https://cdn.ielts.org/ielts-guides/ielts-speaking-band-descriptors.pdf',scoring:'https://ielts.org/take-a-test/your-results/ielts-scoring-in-detail'};

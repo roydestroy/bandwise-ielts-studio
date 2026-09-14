@@ -1,0 +1,13 @@
+import {headers} from 'next/headers';
+import {env} from 'cloudflare:workers';
+import {verifyTeacher,type Teacher} from '@/lib/access';
+
+export async function getTeacher():Promise<Teacher|null>{
+  // Vite replaces DEV with false in production; this branch is not deployed.
+  if(import.meta.env.DEV&&env.LOCAL_DEV_EMAIL){
+    return {userId:'local-development',email:env.LOCAL_DEV_EMAIL,displayName:'Local teacher',fullName:null};
+  }
+  const token=(await headers()).get('cf-access-jwt-assertion');
+  if(!token||!env.ACCESS_TEAM_DOMAIN||!env.ACCESS_AUD)return null;
+  try{return await verifyTeacher(token,env.ACCESS_TEAM_DOMAIN,env.ACCESS_AUD);}catch{return null;}
+}

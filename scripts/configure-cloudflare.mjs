@@ -1,0 +1,13 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+const required=['CLOUDFLARE_D1_DATABASE_ID','CLOUDFLARE_R2_BUCKET_NAME','ACCESS_TEAM_DOMAIN','ACCESS_AUD'];
+for(const key of required)if(!process.env[key])throw new Error('Missing '+key+'. See README.md.');
+if(!/^[0-9a-f-]{36}$/i.test(process.env.CLOUDFLARE_D1_DATABASE_ID))throw new Error('Invalid D1 database ID.');
+const team=process.env.ACCESS_TEAM_DOMAIN.replace(/^https:\/\//,'').replace(/\/$/,'');
+if(!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(team))throw new Error('Invalid Access team domain.');
+const config=JSON.parse(readFileSync('wrangler.json','utf8'));
+config.name=process.env.CLOUDFLARE_WORKER_NAME||config.name;
+config.d1_databases[0].database_id=process.env.CLOUDFLARE_D1_DATABASE_ID;
+config.r2_buckets[0].bucket_name=process.env.CLOUDFLARE_R2_BUCKET_NAME;
+config.vars={ACCESS_TEAM_DOMAIN:team,ACCESS_AUD:process.env.ACCESS_AUD};
+writeFileSync('wrangler.json',JSON.stringify(config,null,2)+'\n');
+console.log('Cloudflare resource bindings configured. No secrets were written to the config.');
