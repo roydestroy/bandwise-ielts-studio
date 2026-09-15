@@ -1,15 +1,18 @@
 # Bandwise · IELTS Teaching Studio
 
-A standalone teacher workspace for IELTS writing and speaking practice. Manage the source in GitHub and deploy it to **Cloudflare Workers**. The database and uploads live in your Cloudflare account. No ChatGPT Sites account is needed to run it.
+A standalone teacher workspace for IELTS practice across all four skills — writing, speaking, reading and listening. Manage the source in GitHub and deploy it to **Cloudflare Workers**. The database and uploads live in your Cloudflare account. No ChatGPT Sites account is needed to run it.
 
 This copy starts empty. It contains no test students, assessments, uploads, provider keys or credentials from the earlier hosted site.
 
 ## What is included
 
-- Student records, writing/speaking submissions, rubric-based AI estimates and teacher feedback.
+- Student records — name, test type, target band and an optional university minimum band — with editing after creation.
+- Writing and Speaking submissions with rubric-based AI estimates and teacher feedback, scored on the official four criteria.
+- Reading and Listening scores: enter the raw score out of 40 from the book's own answer key and the band is computed immediately from a published, approximate conversion table (Academic and General Training Reading differ; Listening is shared). No AI call and no review step — objective skills don't need one.
+- Optional Cambridge IELTS book (1–20) and test (1–4) tagging on any submission, for organizing practice history. This is a reference field only; no Cambridge test content (passages, audio, questions) is stored or reproduced.
 - OpenAI, Gemini, Claude and Qwen provider connections. Each teacher saves their own API keys in the app; keys are encrypted before storage.
 - Automatic browser-side conversion of essay and prompt PDFs into page images for Qwen, including scanned PDFs (20 PDF pages per request).
-- Teacher confirmation of OCR text, printable practice reports and progress tracking.
+- Teacher confirmation of OCR text, printable practice reports and progress tracking, with a per-student flag when the latest practice band falls below their university minimum.
 - Verified Cloudflare Access sign-in, D1 database migrations, private R2 uploads, and a GitHub Actions check/deployment workflow.
 
 ## First deployment from GitHub
@@ -114,6 +117,7 @@ For deployment from your computer, supply the same Cloudflare settings as enviro
 ## Editing and maintenance
 
 - Main interface: `app/page.tsx` and `app/globals.css`.
+- Task definitions, criteria and the Reading/Listening band conversion tables: `lib/ielts.ts`.
 - AI requests: `lib/assessment-ai.ts` and `lib/provider-adapters.ts`.
 - Qwen PDF conversion: `lib/render-pdf.client.ts`. PDF.js assets are copied locally during build; no conversion service receives your files.
 - Authentication: `app/access-auth.ts` and `lib/access.ts`.
