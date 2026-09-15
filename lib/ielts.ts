@@ -6,7 +6,7 @@ export const bandSchema=z.number().min(0).max(9).multipleOf(.5);
 export const criterionSchema=z.object({name:z.string().max(100),band:bandSchema.nullable(),evidence:z.string().max(3000),advice:z.string().max(3000)});
 export const resultSchema=z.object({criteria:z.array(criterionSchema).length(4),summary:z.string().max(5000),strengths:z.array(z.string().max(1000)).max(8),priorities:z.array(z.string().max(1000)).max(8),limitations:z.array(z.string().max(1000)).max(8)});
 export type AssessmentResult=z.infer<typeof resultSchema>;
-export type Student={id:string;name:string;target:number;track:string;created_at:string};
+export type Student={id:string;name:string;target:number;min_band:number|null;track:string;created_at:string};
 export type Asset={key:string;name:string;type:string;size:number;role:'submission'|'prompt'};
 export type Assessment={id:string;student_id:string;task:string;track:string;title:string;prompt:string;transcript:string;assets:Asset[];result:AssessmentResult|null;teacher_result:AssessmentResult|null;notes:string;status:string;confirmed:boolean;created_at:string;version:number;model?:string;rubric_date?:string};
 export const average=(r:AssessmentResult|null)=>r&&r.criteria.every(c=>c.band!==null)?r.criteria.reduce((a,c)=>a+(c.band??0),0)/4:null;
