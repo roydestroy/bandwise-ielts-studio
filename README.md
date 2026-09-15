@@ -20,19 +20,32 @@ You need a Cloudflare account with Workers, D1, R2 and Zero Trust Access enabled
 
 In the Cloudflare dashboard:
 
-1. Create a **D1** database named `bandwise`. Copy its database ID.
-2. Create a private **R2** bucket named `bandwise-uploads`. Leave public access disabled.
-3. Note your Cloudflare **account ID** and Workers subdomain. The default app hostname will be `bandwise-ielts-studio.YOUR-SUBDOMAIN.workers.dev`.
+1. Create a **D1** database named `bandwise`. Copy its database ID (`wrangler d1 create bandwise` also works and prints it directly).
+2. Create a private **R2** bucket named `bandwise-uploads`. Leave public access disabled (`wrangler r2 bucket create bandwise-uploads`).
+3. Note your Cloudflare **account ID** (`wrangler whoami`). By default the app hostname is `bandwise-ielts-studio.YOUR-SUBDOMAIN.workers.dev`.
 
 The deployment workflow creates the tables by applying the checked-in SQL migrations. Do not import the old site's data.
+
+#### Optional: use a custom domain instead of `workers.dev`
+
+If the domain is already an active zone on the same Cloudflare account, you can serve the app from it directly instead of the `workers.dev` subdomain. In `wrangler.json`, set `workers_dev` to `false` and add a `routes` entry:
+
+```json
+"workers_dev": false,
+"routes": [{"pattern": "bandwise.yourdomain.com", "custom_domain": true}]
+```
+
+`wrangler deploy` then creates the DNS record and SSL certificate automatically. The API token in step 3 below needs two extra permissions for this to succeed: **Zone → Workers Routes → Edit** and **Zone → Zone → Read**, scoped to that specific zone under **Zone Resources** (account-only permissions aren't enough for custom domains).
 
 ### 2. Set up teacher sign-in
 
 In Cloudflare Zero Trust, create a **self-hosted Access application** for the full app hostname above (all paths). Allow only your chosen teacher email addresses. Email one-time PIN or an identity provider such as Google can be used. Do not add a Bypass or Everyone policy.
 
-Copy the application's **Application Audience (AUD)** tag and your **team domain**, such as `your-team.cloudflareaccess.com`. You can configure the hostname before the Worker is published. If you use a custom domain later, add it to the Access application too.
+Copy the application's **Application Audience (AUD)** tag and your **team domain**, such as `your-team.cloudflareaccess.com`. You can configure the hostname before the Worker is published. If you use a custom domain instead of `workers.dev`, use that hostname here.
 
 The app checks the JWT signature, issuer, audience and expiration itself. A forged identity header cannot sign someone in. Without working Access configuration, the app's APIs remain signed out. Every teacher has a separate workspace; this version does not introduce shared staff records.
+
+**Managing who has access:** whoever controls this Cloudflare account controls sign-in — there is no in-app admin role or user management screen. To add or remove a teacher, edit the policy's **Include** rule (Zero Trust → Access → Applications → this application → its policy) and add or delete their email. Changes take effect immediately, without a redeploy. Removing a teacher's access does not delete their data; it stays in D1/R2 until you remove it separately.
 
 References: [Protect Workers with Access](https://developers.cloudflare.com/workers/configuration/cloudflare-access/) · [Validate Access JWTs](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/)
 
