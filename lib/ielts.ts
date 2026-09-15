@@ -1,5 +1,5 @@
 import {z} from 'zod';
-export const taskTypes=['Writing Task 1','Writing Task 2','Speaking — full test','Speaking — Part 1','Speaking — Part 2','Speaking — Part 3','Listening','Reading'] as const;
+export const taskTypes=['Writing Task 1','Writing Task 2','Speaking — full test','Listening','Reading'] as const;
 export const tracks=['Academic','General Training'] as const;
 export const objectiveTasks=['Listening','Reading'] as const;
 export const isObjective=(task:string)=>(objectiveTasks as readonly string[]).includes(task);
