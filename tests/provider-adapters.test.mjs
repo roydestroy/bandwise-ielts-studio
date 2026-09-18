@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {audioAnalysis,generate} from '../lib/provider-adapters.ts';
+import {audioAnalysis,generate,parseJSON,providerRequest} from '../lib/provider-adapters.ts';
 import {providers} from '../lib/providers.ts';
 const gemini={provider:'gemini',key:'test-key',textModel:'gemini-2.5-flash',audioModel:'gemini-2.5-flash',region:'ap-southeast-1',workspace:''};
 const speaking=[{type:'input_text',text:'Listen to the recording.'},{type:'input_audio',data:'AAAA',mime:'audio/mpeg'}];
@@ -67,4 +67,36 @@ test('an over-long transcript is trimmed rather than rejected',async()=>{
 test('an audio answer with nothing usable explains itself instead of failing field validation',async()=>{
   assert.throws(()=>audioAnalysis({status:'ok'}),/no transcript or audio observations/);
   assert.throws(()=>audioAnalysis('done'),/no transcript or audio observations/);
+});
+test('JSON wrapped in prose or fences is still read',async()=>{
+  assert.deepEqual(parseJSON('Here is the analysis:\n```json\n{"transcript":"Hi"}\n```\nLet me know.'),{transcript:'Hi'});
+});
+test('raw newlines and tabs inside a transcript are repaired instead of failing',async()=>{
+  const {transcript}=parseJSON('{"transcript":"I live in Athens.\nIt is a big city.","observations":"clear"}');
+  assert.equal(transcript,'I live in Athens.\nIt is a big city.');
+});
+test('an answer that stops mid-sentence is reported as running out of room, not as invalid JSON',async()=>{
+  assert.throws(()=>parseJSON('{"transcript":"Well I think that the first thing',true),e=>{
+    assert.match(e.message,/ran out of response space/);assert.doesNotMatch(e.message,/invalid JSON/);return true;});
+});
+test('a genuinely malformed answer is still reported as invalid JSON',async()=>{
+  assert.throws(()=>parseJSON('transcript = not json at all'),/incomplete or invalid JSON/);
+});
+test('an overloaded provider is retried once and its failure explained as theirs',async()=>{
+  let calls=0;const flaky=async()=>{calls++;return calls===1?new Response('{"error":{"code":503}}',{status:503}):new Response(JSON.stringify(candidate([{text:'{"transcript":"Hi","observations":"clear"}'}])),{status:200});};
+  assert.deepEqual(await generate(gemini,speaking,'guard',true,24000,flaky),{transcript:'Hi',observations:'clear'});
+  assert.equal(calls,2,'a fast 503 is worth one more attempt');
+  let tried=0;const down=async()=>{tried++;return new Response('{"error":{"code":503}}',{status:503});};
+  await assert.rejects(generate(gemini,speaking,'guard',true,24000,down),e=>{
+    assert.match(e.message,/temporarily overloaded or unavailable/);assert.doesNotMatch(e.message,/file limits/);return true;});
+  assert.equal(tried,2,'the retry is not repeated indefinitely');
+});
+test('a 5xx after a long wait is not worth sending the audio again',async()=>{
+  let calls=0;const slow=async()=>{calls++;return new Response('',{status:503})};let clock=0;const now=()=>{clock+=30000;return clock};
+  await assert.rejects(providerRequest('https://example.test',{},{},slow,now),/temporarily overloaded/);
+  assert.equal(calls,1);
+});
+test('a complete answer followed by more output is read from the first JSON value',async()=>{
+  assert.deepEqual(parseJSON('{"transcript":"Hi"}\nThat is the transcript.'),{transcript:'Hi'});
+  assert.deepEqual(parseJSON('{"transcript":"Hi"}{"observations":"clear"}'),{transcript:'Hi'});
 });
