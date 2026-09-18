@@ -100,3 +100,16 @@ test('a complete answer followed by more output is read from the first JSON valu
   assert.deepEqual(parseJSON('{"transcript":"Hi"}\nThat is the transcript.'),{transcript:'Hi'});
   assert.deepEqual(parseJSON('{"transcript":"Hi"}{"observations":"clear"}'),{transcript:'Hi'});
 });
+test('a speaking request gets the whole output window of a 2.5 model',async()=>{
+  const {fetcher,sent}=reply(candidate([{text:'{"transcript":"Hi","observations":"clear"}'}]));
+  await generate(gemini,speaking,'guard',true,providers.gemini.audioTokens,fetcher);
+  const config=sent().body.generationConfig;
+  assert.equal(config.maxOutputTokens,65536,'gemini-2.5-flash allows 65536 output tokens');
+  assert.ok(config.thinkingConfig.thinkingBudget<=8192,'thinking stays within the range every 2.5 variant accepts');
+  assert.ok(config.maxOutputTokens-config.thinkingConfig.thinkingBudget>40000,'a full-test transcript needs most of the window');
+});
+test('a model with a smaller window is not asked for more than it allows',async()=>{
+  const {fetcher,sent}=reply(candidate([{text:'{"ok":true}'}]));
+  await generate({...gemini,audioModel:'gemini-2.0-flash'},speaking,'guard',true,providers.gemini.audioTokens,fetcher);
+  assert.equal(sent().body.generationConfig.maxOutputTokens,8192,'asking a 2.0 model for 65536 is rejected outright');
+});
