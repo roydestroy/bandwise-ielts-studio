@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {generate} from '../lib/provider-adapters.ts';
+import {audioAnalysis,generate} from '../lib/provider-adapters.ts';
 import {providers} from '../lib/providers.ts';
 const gemini={provider:'gemini',key:'test-key',textModel:'gemini-2.5-flash',audioModel:'gemini-2.5-flash',region:'ap-southeast-1',workspace:''};
 const speaking=[{type:'input_text',text:'Listen to the recording.'},{type:'input_audio',data:'AAAA',mime:'audio/mpeg'}];
@@ -42,4 +42,29 @@ test('other providers also report truncation instead of invalid JSON',async()=>{
   const claude={...gemini,provider:'claude'};
   const cutText=reply({stop_reason:'max_tokens',content:[{type:'text',text:'{"criteria":['}]});
   await assert.rejects(generate(claude,[{type:'input_text',text:'grade this'}],'guard',false,11000,cutText.fetcher),/ran out of response space/);
+});
+test('a speaking answer that splits examiner and candidate speech still yields a transcript',async()=>{
+  const {transcript,observations}=audioAnalysis({transcript:{examiner:'Can you describe your home town?',candidate:'I live in a small town near the sea.'},observations:'clear but hesitant'});
+  assert.equal(transcript,'I live in a small town near the sea.');
+  assert.equal(observations,'clear but hesitant');
+});
+test('a transcript returned as turns is joined with its speakers',async()=>{
+  const {transcript}=audioAnalysis({transcript:[{speaker:'Examiner',text:'What do you do?'},{speaker:'Candidate',text:'I am a student.'}],observations:{fluency:'some pausing'}});
+  assert.equal(transcript,'Examiner: What do you do?\nCandidate: I am a student.');
+});
+test('alternative transcript keys and wrapper objects are accepted',async()=>{
+  assert.equal(audioAnalysis({response:{candidate_transcript:'Yes, I agree.',analysis:'fine'}}).transcript,'Yes, I agree.');
+  assert.equal(audioAnalysis({transcription:'Hello there.'}).transcript,'Hello there.');
+});
+test('observations scattered across sibling keys are kept as evidence',async()=>{
+  const {observations}=audioAnalysis({transcript:'I think so.',fluency:'frequent self-correction',pronunciation:'clear word stress'});
+  assert.deepEqual(observations,{fluency:'frequent self-correction',pronunciation:'clear word stress'});
+});
+test('an over-long transcript is trimmed rather than rejected',async()=>{
+  const {transcript}=audioAnalysis({transcript:'word '.repeat(12000),observations:'long recording'});
+  assert.equal(transcript.length,40000);
+});
+test('an audio answer with nothing usable explains itself instead of failing field validation',async()=>{
+  assert.throws(()=>audioAnalysis({status:'ok'}),/no transcript or audio observations/);
+  assert.throws(()=>audioAnalysis('done'),/no transcript or audio observations/);
 });
