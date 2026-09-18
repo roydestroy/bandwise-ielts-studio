@@ -3,7 +3,7 @@ export const providerIds=['openai','gemini','claude','qwen'] as const;
 export type ProviderId=typeof providerIds[number];
 export const providers={
  openai:{name:'OpenAI',textModel:'gpt-4.1',audioModel:'gpt-audio',audio:true,pdf:true,audioTokens:16000,help:'https://platform.openai.com/api-keys'},
- gemini:{name:'Gemini',textModel:'gemini-2.5-flash',audioModel:'gemini-2.5-flash',audio:true,pdf:true,audioTokens:24000,help:'https://aistudio.google.com/apikey'},
+ gemini:{name:'Gemini',textModel:'gemini-2.5-flash',audioModel:'gemini-2.5-flash',audio:true,pdf:true,audioTokens:65536,help:'https://aistudio.google.com/apikey'},
  claude:{name:'Claude',textModel:'claude-sonnet-5',audioModel:'',audio:false,pdf:true,audioTokens:6500,help:'https://platform.claude.com/settings/keys'},
  qwen:{name:'Qwen',textModel:'qwen3.5-omni-plus',audioModel:'qwen3.5-omni-plus',audio:true,pdf:true,audioTokens:6500,help:'https://www.alibabacloud.com/help/en/model-studio/get-api-key'}
 } as const;
