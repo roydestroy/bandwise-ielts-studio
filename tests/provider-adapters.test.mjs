@@ -113,3 +113,15 @@ test('a model with a smaller window is not asked for more than it allows',async(
   await generate({...gemini,audioModel:'gemini-2.0-flash'},speaking,'guard',true,providers.gemini.audioTokens,fetcher);
   assert.equal(sent().body.generationConfig.maxOutputTokens,8192,'asking a 2.0 model for 65536 is rejected outright');
 });
+test('a model newer than this code keeps its own output window',async()=>{
+  const {fetcher,sent}=reply(candidate([{text:'{"transcript":"Hi","observations":"clear"}'}]));
+  await generate({...gemini,audioModel:'gemini-3.8-flash'},speaking,'guard',true,providers.gemini.audioTokens,fetcher);
+  const config=sent().body.generationConfig;
+  assert.equal(config.maxOutputTokens,undefined,'an unrecognised model must not be held to an older model’s ceiling');
+  assert.equal(config.thinkingConfig,undefined,'and must not be sent a thinking parameter it may reject');
+});
+test('a deliberate text budget is still sent to a model this code does not know',async()=>{
+  const {fetcher,sent}=reply(candidate([{text:'{"ok":true}'}]));
+  await generate({...gemini,textModel:'gemini-3.8-flash'},[{type:'input_text',text:'grade this'}],'guard',false,11000,fetcher);
+  assert.equal(sent().body.generationConfig.maxOutputTokens,11000);
+});
