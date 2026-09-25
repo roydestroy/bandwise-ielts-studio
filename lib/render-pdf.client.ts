@@ -14,6 +14,8 @@ export async function renderPdfs(a:Assessment,action:string,onProgress:(message:
     onProgress('Opening '+file.name+'…');
     const response=await fetch('/api/assets?id='+encodeURIComponent(a.id)+'&key='+encodeURIComponent(file.key));
     if(!response.ok)throw new Error('Could not open '+file.name+'. Refresh and try again.');
+    // An HTML answer here is Cloudflare's sign-in or error page, not the file.
+    if(response.headers.get('content-type')?.includes('text/html'))throw new Error('Could not open '+file.name+'. Your sign-in may have expired. Copy any unsaved text, then reload the page.');
     const task=getDocument({data:new Uint8Array(await response.arrayBuffer()),
       cMapUrl:assets+'cmaps/',cMapPacked:true,standardFontDataUrl:assets+'standard_fonts/',wasmUrl:assets+'wasm/'});
     try{
