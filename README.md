@@ -88,7 +88,7 @@ Add these **repository variables**:
 
 Open **Actions → Check and deploy Bandwise → Run workflow** on `main`.
 
-The workflow installs dependencies, checks types, runs tests, builds, applies database migrations and deploys the Worker. It installs the encryption secret without printing it. The Worker URL appears in the deployment log. Visit that URL, sign in through Access, and connect your AI provider under **AI connection**.
+The workflow installs dependencies, checks types, runs tests, builds, applies database migrations and deploys the Worker. It installs the encryption secret without printing it. The Worker URL appears in the deployment log. Visit that URL, sign in through Access, and connect your AI provider under **Settings → AI connection**.
 
 Until `CLOUDFLARE_DEPLOY_ENABLED` is `true`, GitHub runs checks but skips deployment. After setup, pushes to `main` deploy automatically. Pull requests run checks only and never receive deployment credentials.
 
@@ -108,7 +108,7 @@ Cloudflare Access still protects the app. The links go only to the teacher's sel
 
 ### 6. Optional: email progress reports
 
-No deployment setting is needed. Each teacher opens **Email reports** in the app and connects their own mailbox using its outgoing (SMTP) server, the sending half of the IMAP/SMTP settings an email app uses. Presets are included for Gmail, Outlook, iCloud, Yahoo and Zoho. Most providers require an app password rather than the normal sign-in password. The password is encrypted with the same `PROVIDER_ENCRYPTION_KEY` as AI keys.
+No deployment setting is needed. Each teacher opens **Settings → Email** in the app and connects their own mailbox using its outgoing (SMTP) server, the sending half of the IMAP/SMTP settings an email app uses. Presets are included for Gmail, Outlook, iCloud, Yahoo and Zoho. Most providers require an app password rather than the normal sign-in password. The password is encrypted with the same `PROVIDER_ENCRYPTION_KEY` as AI keys.
 
 Cloudflare Workers cannot use port 25, so use port 465 (SSL/TLS) or 587/2525 (STARTTLS). Then add an email address to a student and choose **Email report** on the Students or Progress page. You see a preview and can add a personal note before sending. Reports include only teacher-reviewed work.
 
