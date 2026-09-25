@@ -45,6 +45,7 @@
     "tailwind-merge": "3.6.0",
     "unpdf": "^1.8.1",
     "vaul": "^1.1.2",
+    "worker-mailer": "^1.2.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
