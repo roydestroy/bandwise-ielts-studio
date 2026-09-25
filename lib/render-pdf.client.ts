@@ -1,3 +1,4 @@
+import './pdfjs-polyfill.mjs';
 import type {Assessment} from './ielts';
 import {MAX_PDF_PAGES,MAX_PAGE_BYTES,MAX_PDF_BYTES,pdfsForAction} from './pdf-pages';
 import {readJson} from './read-json';
@@ -9,7 +10,7 @@ export async function renderPdfs(a:Assessment,action:string,onProgress:(message:
   if(!files.length)return [];
   const {getDocument,GlobalWorkerOptions,version}=await import('pdfjs-dist');
   const assets='/pdfjs/'+version+'/';
-  GlobalWorkerOptions.workerSrc=assets+'pdf.worker.min.mjs';
+  GlobalWorkerOptions.workerSrc=assets+'pdf.worker.polyfilled.mjs';
   const rendered:{key:string;pages:number}[]=[];
   let pageCount=0,totalData=0;
   for(const file of files){
