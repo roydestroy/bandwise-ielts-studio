@@ -91,6 +91,20 @@ The workflow installs dependencies, checks types, runs tests, builds, applies da
 
 Until `CLOUDFLARE_DEPLOY_ENABLED` is `true`, GitHub runs checks but skips deployment. After setup, pushes to `main` deploy automatically. Pull requests run checks only and never receive deployment credentials.
 
+### 5. Optional: let AI providers fetch files by link
+
+By default the Worker reads each uploaded file and sends its contents to the AI provider. That work is what can exceed the Workers Free plan's 10 ms CPU limit ("Worker exceeded resource limits"). With an R2 API token, the Worker instead sends a signed download link that opens one file for 15 minutes, and the provider downloads the file itself:
+
+- OpenAI and Claude: essay photos, PDFs and the official rubric.
+- Qwen: essay photos, PDF pages and speaking recordings.
+- Gemini's inline API needs the file contents, so Gemini is unchanged, and so is OpenAI speaking audio.
+
+Cloudflare Access still protects the app. The links go only to the teacher's selected AI provider, which already receives these files. Anyone who obtained a link could download that one file until it expires.
+
+1. In the Cloudflare dashboard, open **R2 → Manage API tokens → Create API token**. Choose **Object Read only**, limited to your uploads bucket.
+2. Add the token's **Access Key ID** and **Secret Access Key** as GitHub repository secrets `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`.
+3. Run the deploy workflow again. It installs both as Worker secrets. Without them, the app keeps sending file contents directly.
+
 ## Local development
 
 Install Node.js 24 and run:
@@ -130,7 +144,7 @@ To stop automated deployment, set `CLOUDFLARE_DEPLOY_ENABLED` to `false`. To rol
 
 ## Privacy and scope
 
-API keys are stored encrypted with AES-GCM and scoped to the signed-in teacher. Uploaded files are served through authenticated, owner-checked requests. Original uploads stay in R2; generated Qwen page images are temporary request data. No student data or credentials belong in this repository.
+API keys are stored encrypted with AES-GCM and scoped to the signed-in teacher. Uploaded files are served through authenticated, owner-checked requests. Original uploads stay in R2. For Qwen, PDF pages rendered in the teacher's browser are stored next to their PDF and deleted with it. If R2 links are configured (step 5), AI providers receive 15-minute signed links to individual files. A copy of each official rubric PDF is kept in R2 and refreshed weekly. No student data or credentials belong in this repository.
 
 This is an independent IELTS practice tool. Estimates are not official IELTS scores, and teacher review remains necessary. Provider API charges are separate from chat subscriptions.
 

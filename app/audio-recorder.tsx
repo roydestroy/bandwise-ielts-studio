@@ -143,7 +143,7 @@ export default function AudioRecorder({provider,providerName,limitBytes,disabled
   const recording=stage==='recording'||stage==='paused';
   return <div className="recorder">
     <div className="recorder-main">
-      <div className={'recorder-dot'+(stage==='recording'?' live':'')} aria-hidden="true"><span style={{transform:'scale('+(1+Math.min(1,level*2)).toFixed(2)+')'}}/><Mic size={20}/></div>
+      <div className={'recorder-dot'+(stage==='recording'?' live':'')} aria-hidden="true"><span style={{transform:'scale('+(1+Math.min(.3,level*.6)).toFixed(2)+')'}}/><Mic size={20}/></div>
       <div className="recorder-readout">
         <strong aria-live="off">{describeLength(seconds)}</strong>
         <span role="status" aria-live="polite">{stage==='recording'?'Recording…':stage==='paused'?'Paused':stage==='starting'?'Starting the microphone…':stage==='ready'?'Recorded '+describeLength(seconds)+' · '+describeSize(bytes):'Record the speaking test here — no other app needed.'}</span>

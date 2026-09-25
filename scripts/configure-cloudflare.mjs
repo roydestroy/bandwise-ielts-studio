@@ -9,5 +9,7 @@ config.name=process.env.CLOUDFLARE_WORKER_NAME||config.name;
 config.d1_databases[0].database_id=process.env.CLOUDFLARE_D1_DATABASE_ID;
 config.r2_buckets[0].bucket_name=process.env.CLOUDFLARE_R2_BUCKET_NAME;
 config.vars={ACCESS_TEAM_DOMAIN:team,ACCESS_AUD:process.env.ACCESS_AUD};
+// Where signed R2 download links point. The R2 API keys themselves are Worker secrets (scripts/deploy.mjs).
+if(/^[0-9a-f]{32}$/.test(process.env.CLOUDFLARE_ACCOUNT_ID||''))Object.assign(config.vars,{R2_ACCOUNT_ID:process.env.CLOUDFLARE_ACCOUNT_ID,R2_BUCKET_NAME:process.env.CLOUDFLARE_R2_BUCKET_NAME});
 writeFileSync('wrangler.json',JSON.stringify(config,null,2)+'\n');
 console.log('Cloudflare resource bindings configured. No secrets were written to the config.');
