@@ -13,6 +13,7 @@ This copy starts empty. It contains no test students, assessments, uploads, prov
 - OpenAI, Gemini, Claude and Qwen provider connections. Each teacher saves their own API keys in the app; keys are encrypted before storage.
 - Automatic browser-side conversion of essay and prompt PDFs into page images for Qwen, including scanned PDFs (20 PDF pages per request).
 - Teacher confirmation of OCR text, printable practice reports and progress tracking, with a per-student flag when the latest practice band falls below their university minimum.
+- Optional student email addresses and emailed progress reports — overall band by practice test, each skill's history and the latest criterion profile as email-safe bar charts — sent from the teacher's own mailbox over SMTP.
 - Verified Cloudflare Access sign-in, D1 database migrations, private R2 uploads, and a GitHub Actions check/deployment workflow.
 
 ## First deployment from GitHub
@@ -104,6 +105,12 @@ Cloudflare Access still protects the app. The links go only to the teacher's sel
 1. In the Cloudflare dashboard, open **R2 → Manage API tokens → Create API token**. Choose **Object Read only**, limited to your uploads bucket.
 2. Add the token's **Access Key ID** and **Secret Access Key** as GitHub repository secrets `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`.
 3. Run the deploy workflow again. It installs both as Worker secrets. Without them, the app keeps sending file contents directly.
+
+### 6. Optional: email progress reports
+
+No deployment setting is needed. Each teacher opens **Email reports** in the app and connects their own mailbox using its outgoing (SMTP) server, the sending half of the IMAP/SMTP settings an email app uses. Presets are included for Gmail, Outlook, iCloud, Yahoo and Zoho. Most providers require an app password rather than the normal sign-in password. The password is encrypted with the same `PROVIDER_ENCRYPTION_KEY` as AI keys.
+
+Cloudflare Workers cannot use port 25, so use port 465 (SSL/TLS) or 587/2525 (STARTTLS). Then add an email address to a student and choose **Email report** on the Students or Progress page. You see a preview and can add a personal note before sending. Reports include only teacher-reviewed work.
 
 ## Local development
 
