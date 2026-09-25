@@ -2,13 +2,14 @@ import {z} from 'zod';
 import type {Assessment} from './ielts';
 
 export const MAX_PDF_PAGES=20;
-export const MAX_PAGE_DATA=3*1024*1024;
-export const MAX_PDF_DATA=16*1024*1024;
-export const renderedPdfSchema=z.array(z.object({
-  key:z.string().min(1).max(600),
-  pages:z.array(z.string().max(MAX_PAGE_DATA).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/)).min(1).max(MAX_PDF_PAGES)
-})).max(5);
-export type RenderedPdf=z.infer<typeof renderedPdfSchema>;
+// JPEG bytes, about what the earlier base64 limits (3 MB a page, 16 MB in total) allowed.
+export const MAX_PAGE_BYTES=2.25*1024*1024;
+export const MAX_PDF_BYTES=12*1024*1024;
+// Qwen reads PDFs as page images. The browser renders them and uploads each page to R2 (/api/pages), so the AI
+// request only says how many pages each PDF has; the Worker never parses megabytes of image data.
+export const pageCountsSchema=z.array(z.object({key:z.string().min(1).max(600),pages:z.number().int().min(1).max(MAX_PDF_PAGES)})).max(5);
+export type RenderedPdf={key:string;pages:string[]}[];
+export const pageKey=(assetKey:string,page:number)=>assetKey+'/page-'+page+'.jpg';
 
 export function pdfsForAction(a:Assessment,action:string){
   return a.assets.filter(f=>f.type==='application/pdf'&&f.role===(action==='transcribe'?'submission':'prompt'));
@@ -16,13 +17,18 @@ export function pdfsForAction(a:Assessment,action:string){
 
 export function validatePdfPages(a:Assessment,action:string,provider:string,input:unknown):RenderedPdf{
   if(provider!=='qwen')return [];
-  const rendered=renderedPdfSchema.parse(input??[]);
+  const counts=pageCountsSchema.parse(input??[]);
   const expected=pdfsForAction(a,action);
-  if(rendered.length!==expected.length||new Set(rendered.map(x=>x.key)).size!==rendered.length||rendered.some(x=>!expected.some(f=>f.key===x.key)))
+  if(counts.length!==expected.length||new Set(counts.map(x=>x.key)).size!==counts.length||counts.some(x=>!expected.some(f=>f.key===x.key)))
     throw new Error('The PDF pages are not ready. Refresh and try again.');
-  if(rendered.reduce((n,x)=>n+x.pages.length,0)>MAX_PDF_PAGES)
+  if(counts.reduce((n,x)=>n+x.pages,0)>MAX_PDF_PAGES)
     throw new Error('Use up to 20 PDF pages per AI request. Split the PDF into smaller assessments.');
-  if(rendered.reduce((n,x)=>n+x.pages.reduce((m,page)=>m+page.length,0),0)>MAX_PDF_DATA)
-    throw new Error('The PDF images are too large. Use a smaller PDF and try again.');
-  return rendered;
+  return counts.map(x=>({key:x.key,pages:Array.from({length:x.pages},(_,i)=>pageKey(x.key,i+1))}));
+}
+
+// Every page must have been uploaded, and together they must stay within what one request can carry.
+export async function checkPages(store:Pick<R2Bucket,'head'>,rendered:RenderedPdf){
+  const heads=await Promise.all(rendered.flatMap(x=>x.pages).map(key=>store.head(key)));
+  if(heads.some(h=>!h))throw new Error('The PDF pages are not ready. Refresh and try again.');
+  if(heads.reduce((n,h)=>n+h!.size,0)>MAX_PDF_BYTES)throw new Error('The PDF images are too large. Use a smaller PDF and try again.');
 }
