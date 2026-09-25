@@ -12,3 +12,5 @@ run([wrangler,'d1','migrations','apply','DB','--remote','--config','wrangler.jso
 // First deployment is still closed to API users until this key is installed.
 run([wrangler,'deploy','--config','dist/server/wrangler.json']);
 run([wrangler,'secret','put','PROVIDER_ENCRYPTION_KEY','--config','wrangler.json'],key+'\n');
+// Optional: an R2 API token lets AI providers fetch files by signed link instead of the Worker encoding them.
+for(const name of ['R2_ACCESS_KEY_ID','R2_SECRET_ACCESS_KEY'])if(process.env[name])run([wrangler,'secret','put',name,'--config','wrangler.json'],process.env[name]+'\n');
