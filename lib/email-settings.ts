@@ -30,3 +30,6 @@ export const cleanSecret=(s:string)=>s.replace(/[​-‍⁠﻿]/g,'');
 // SMTP AUTH expects UTF-8 (RFC 4616), so hand it the UTF-8 bytes as a byte string; btoa() then yields the right base64.
 export const utf8Bytes=(s:string)=>String.fromCharCode(...new TextEncoder().encode(s));
 export const hasNonAscii=(s:string)=>/[^\x20-\x7e]/.test(s);
+// worker-mailer puts ASCII display names inside "…" unescaped and headers verbatim, so a quote, backslash or line break
+// in a name or subject would break the header (or add new ones). Non-ASCII text is safely encoded by the library.
+export const headerText=(s:string)=>s.replace(/[\x00-\x1f\x7f"\\]/g,' ').replace(/\s+/g,' ').trim();

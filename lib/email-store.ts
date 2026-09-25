@@ -2,7 +2,7 @@ import {env} from 'cloudflare:workers';
 import {WorkerMailer} from 'worker-mailer';
 import {database} from './storage';
 import {sealKey,unsealKey} from './provider-crypto';
-import {mailConfigSchema,implicitTls,cleanSecret,utf8Bytes,hasNonAscii,type MailConfig,type MailState} from './email-settings';
+import {mailConfigSchema,implicitTls,cleanSecret,utf8Bytes,hasNonAscii,headerText,type MailConfig,type MailState} from './email-settings';
 
 type Row={config:string;encrypted_password:string;tested_at:string|null};
 const context=(owner:string)=>owner+':smtp';
@@ -47,7 +47,7 @@ export async function sendMail(owner:string,message:{to:{name?:string;email:stri
   try{
     await WorkerMailer.send(
       {host:config.host,port:config.port,secure:implicitTls(config.port),startTls:!implicitTls(config.port),credentials:{username:utf8Bytes(config.username),password:utf8Bytes(password)},authType:['plain','login'],socketTimeoutMs:15000,responseTimeoutMs:15000},
-      {from:{name:config.fromName||undefined,email:config.fromEmail},to:message.to,reply:config.fromEmail,subject:message.subject,html:message.html,text:message.text},
+      {from:{name:headerText(config.fromName)||undefined,email:config.fromEmail},to:{name:message.to.name&&headerText(message.to.name)||undefined,email:message.to.email},reply:config.fromEmail,subject:headerText(message.subject),html:message.html,text:message.text},
     );
   }catch(e){throw new Error(explain(e,hasNonAscii(config.username+password)));}
   return config;

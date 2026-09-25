@@ -53,3 +53,10 @@ test('SMTP credentials survive non-Latin-1 characters and pasted invisible chara
   assert.equal(hasNonAscii('abcd efgh ijkl mnop'),false);
   assert.equal(hasNonAscii(password),true);
 });
+
+test('names and subjects cannot break email headers',async()=>{
+  const {headerText}=await import('../lib/email-settings.ts');
+  assert.equal(headerText('Alex "AJ" Morgan'),'Alex AJ Morgan');
+  assert.equal(headerText('Ms Lee\r\nBcc: x@evil.test'),'Ms Lee Bcc: x@evil.test');
+  assert.equal(headerText('Κα Λέε — IELTS'),'Κα Λέε — IELTS');
+});
