@@ -37,5 +37,5 @@ export function oversizeMessage(provider:ProviderId|'none',providerName:string,b
   const limit=speakingAudioLimit(provider);
   const roomier=(Object.keys(speakingAudioLimits) as ProviderId[]).filter(id=>speakingAudioLimits[id]>=bytes);
   return 'This recording is '+describeSize(bytes)+' even at the lowest quality, and '+providerName+' accepts about '+describeSize(limit)+'.'
-    +(roomier.length?' Record a shorter sample, or switch your speaking provider to '+roomier.map(id=>id==='openai'?'OpenAI':id[0].toUpperCase()+id.slice(1)).join(' or ')+' in AI connection.':' Record a shorter sample.');
+    +(roomier.length?' Record a shorter sample, or switch your speaking provider to '+roomier.map(id=>id==='openai'?'OpenAI':id[0].toUpperCase()+id.slice(1)).join(' or ')+' in Settings → AI connection.':' Record a shorter sample.');
 }

@@ -26,7 +26,7 @@ export async function markTested(owner:string){await database().prepare('UPDATE 
 
 async function credentials(owner:string){
   const row=await database().prepare('SELECT config,encrypted_password FROM email_settings WHERE owner = ?').bind(owner).first<Row>();
-  if(!row)throw new Error('Connect your mailbox in Email reports first.');
+  if(!row)throw new Error('Connect your mailbox in Settings → Email first.');
   if(!env.PROVIDER_ENCRYPTION_KEY)throw new Error('Secure key storage is temporarily unavailable.');
   const password=await unsealKey(env.PROVIDER_ENCRYPTION_KEY,row.encrypted_password,context(owner)).catch(()=>{throw new Error('The saved mailbox password is unreadable. Enter it again.')});
   return {config:mailConfigSchema.parse(JSON.parse(row.config)),password:cleanSecret(password)};
