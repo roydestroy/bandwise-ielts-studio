@@ -42,3 +42,14 @@ test('ignores unreviewed work and other students',()=>{
   assert.equal(r.empty,true);
   assert.match(r.html,/No reviewed work yet/);
 });
+
+test('SMTP credentials survive non-Latin-1 characters and pasted invisible characters',async()=>{
+  const {utf8Bytes,cleanSecret,hasNonAscii}=await import('../lib/email-settings.ts');
+  const password='κωδικός-€1';
+  assert.throws(()=>btoa(password)); // what worker-mailer did before
+  const encoded=btoa(utf8Bytes(password));
+  assert.equal(Buffer.from(encoded,'base64').toString('utf8'),password);
+  assert.equal(cleanSecret('abcd​efgh﻿'),'abcdefgh');
+  assert.equal(hasNonAscii('abcd efgh ijkl mnop'),false);
+  assert.equal(hasNonAscii(password),true);
+});
