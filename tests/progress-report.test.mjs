@@ -42,3 +42,21 @@ test('ignores unreviewed work and other students',()=>{
   assert.equal(r.empty,true);
   assert.match(r.html,/No reviewed work yet/);
 });
+
+test('SMTP credentials survive non-Latin-1 characters and pasted invisible characters',async()=>{
+  const {utf8Bytes,cleanSecret,hasNonAscii}=await import('../lib/email-settings.ts');
+  const password='κωδικός-€1';
+  assert.throws(()=>btoa(password)); // what worker-mailer did before
+  const encoded=btoa(utf8Bytes(password));
+  assert.equal(Buffer.from(encoded,'base64').toString('utf8'),password);
+  assert.equal(cleanSecret('abcd​efgh﻿'),'abcdefgh');
+  assert.equal(hasNonAscii('abcd efgh ijkl mnop'),false);
+  assert.equal(hasNonAscii(password),true);
+});
+
+test('names and subjects cannot break email headers',async()=>{
+  const {headerText}=await import('../lib/email-settings.ts');
+  assert.equal(headerText('Alex "AJ" Morgan'),'Alex AJ Morgan');
+  assert.equal(headerText('Ms Lee\r\nBcc: x@evil.test'),'Ms Lee Bcc: x@evil.test');
+  assert.equal(headerText('Κα Λέε — IELTS'),'Κα Λέε — IELTS');
+});

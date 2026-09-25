@@ -23,3 +23,13 @@ export const mailPresets=[
   {id:'custom',name:'Other provider',host:'',port:587,hint:'Use the SMTP (outgoing) server shown in your provider’s IMAP/SMTP settings.'},
 ] as const;
 export const studentEmailSchema=z.string().trim().toLowerCase().email('Enter a valid student email address.').max(254).nullable();
+
+// Copying a password from a web page can bring along invisible characters (zero-width spaces, byte-order marks).
+export const cleanSecret=(s:string)=>s.replace(/[​-‍⁠﻿]/g,'');
+// worker-mailer base64-encodes SMTP credentials with btoa(), which only accepts Latin-1 and throws on anything else.
+// SMTP AUTH expects UTF-8 (RFC 4616), so hand it the UTF-8 bytes as a byte string; btoa() then yields the right base64.
+export const utf8Bytes=(s:string)=>String.fromCharCode(...new TextEncoder().encode(s));
+export const hasNonAscii=(s:string)=>/[^\x20-\x7e]/.test(s);
+// worker-mailer puts ASCII display names inside "…" unescaped and headers verbatim, so a quote, backslash or line break
+// in a name or subject would break the header (or add new ones). Non-ASCII text is safely encoded by the library.
+export const headerText=(s:string)=>s.replace(/[\x00-\x1f\x7f"\\]/g,' ').replace(/\s+/g,' ').trim();
