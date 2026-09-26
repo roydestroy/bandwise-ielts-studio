@@ -20,9 +20,14 @@ export const authRateLimit=sqliteTable('auth_rate_limit',{id:text('id').primaryK
 
 // A workspace owns students and assessments: its id is the `owner` value on every row. Teachers who used
 // Cloudflare Access keep their Access user ID as their workspace ID, so no data moves. `status` gates the
-// studio: new sign-ups wait as 'pending' until an admin approves them.
-export const workspaces=sqliteTable('workspaces',{id:text('id').primaryKey(),status:text('status').notNull(),createdAt:text('created_at').notNull(),approvedAt:text('approved_at')});
+// studio: new sign-ups wait as 'pending' until an admin approves them. `aiCreditLimit` overrides the monthly
+// Bandwise AI allowance (PLATFORM_MONTHLY_CREDITS) for one workspace; null means the default.
+export const workspaces=sqliteTable('workspaces',{id:text('id').primaryKey(),status:text('status').notNull(),createdAt:text('created_at').notNull(),approvedAt:text('approved_at'),aiCreditLimit:integer('ai_credit_limit')});
 export const memberships=sqliteTable('memberships',{userId:text('user_id').notNull().references(()=>authUser.id,{onDelete:'cascade'}),workspaceId:text('workspace_id').notNull().references(()=>workspaces.id),role:text('role').notNull(),createdAt:text('created_at').notNull()},t=>[uniqueIndex('idx_memberships_user').on(t.userId),index('idx_memberships_workspace').on(t.workspaceId)]);
 // Which email signed in through Cloudflare Access as which workspace, recorded on every Access request, so the
 // same person signing in with Google or an email code is linked to their existing data.
 export const accessIdentities=sqliteTable('access_identities',{email:text('email').primaryKey(),workspaceId:text('workspace_id').notNull(),lastSeen:text('last_seen').notNull()});
+
+// Answers to the pilot survey: one row per workspace, updated when the teacher answers again. Prices are
+// euros a month, from the four Van Westendorp questions.
+export const pilotFeedback=sqliteTable('pilot_feedback',{owner:text('owner').primaryKey(),email:text('email').notNull(),tooCheap:real('too_cheap'),bargain:real('bargain'),expensive:real('expensive'),tooExpensive:real('too_expensive'),hoursSaved:real('hours_saved'),comments:text('comments').notNull(),updatedAt:text('updated_at').notNull()});

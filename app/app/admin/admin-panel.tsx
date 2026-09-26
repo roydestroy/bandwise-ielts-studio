@@ -7,6 +7,8 @@ import {Table,TableHeader,TableHead,TableRow,TableBody,TableCell} from '@/compon
 import {readJson} from '@/lib/read-json';
 import type {WorkspaceRow} from '@/lib/workspaces';
 import UsagePanel from './usage-panel';
+import AccuracyPanel from './accuracy-panel';
+import FeedbackPanel from './feedback-panel';
 
 const date=(s:string|null)=>s?new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
 const label={pending:'Waiting',active:'Approved',suspended:'Paused'} as const;
@@ -21,7 +23,7 @@ export default function AdminPanel({me}:{me:string}){
   const waiting=rows?.filter(r=>r.status==='pending').length??0;
   return <main className="main admin-main"><Toaster richColors position="top-right"/>
     <a className="text-button back" href="/app"><ArrowLeft size={16}/> Back to the studio</a>
-    <Tabs className="settings-tabs admin-tabs" defaultValue="accounts"><TabsList><TabsTrigger value="accounts">Accounts{waiting?' ('+waiting+')':''}</TabsTrigger><TabsTrigger value="usage">Usage and pricing</TabsTrigger></TabsList>
+    <Tabs className="settings-tabs admin-tabs" defaultValue="accounts"><TabsList><TabsTrigger value="accounts">Accounts{waiting?' ('+waiting+')':''}</TabsTrigger><TabsTrigger value="usage">Usage and pricing</TabsTrigger><TabsTrigger value="accuracy">Accuracy</TabsTrigger><TabsTrigger value="feedback">Feedback</TabsTrigger></TabsList>
     <TabsContent value="accounts">
     <div className="page-heading"><div><p className="eyebrow">ADMIN</p><h1>Accounts</h1><p>{rows?waiting?waiting+' waiting for approval.':'Nobody is waiting for approval.':'Loading…'}</p></div></div>
     {error&&<div className="notice error" role="alert">{error}</div>}
@@ -37,6 +39,8 @@ export default function AdminPanel({me}:{me:string}){
       </TableRow>)}</TableBody></Table></section>}
     </TabsContent>
     <TabsContent value="usage"><UsagePanel/></TabsContent>
+    <TabsContent value="accuracy"><AccuracyPanel/></TabsContent>
+    <TabsContent value="feedback"><FeedbackPanel/></TabsContent>
     </Tabs>
   </main>;
 }

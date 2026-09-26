@@ -3,6 +3,7 @@ import {listWorkspaces,setWorkspaceStatus} from '@/lib/workspaces';
 import {database} from '@/lib/storage';
 import {sendSystemEmail,approvedEmail,systemEmailReady} from '@/lib/system-email';
 import {z} from 'zod';
+import {setCreditLimit} from '@/lib/ai-credits-store';
 export const dynamic='force-dynamic';
 const json=(d:unknown,status=200)=>Response.json(d,{status,headers:{'Cache-Control':'private, no-store'}});
 
@@ -18,7 +19,14 @@ export async function POST(req:Request){
   const me=await admin();if(!me)return json({error:'Only admins can do this.'},403);
   if(req.headers.get('origin')&&req.headers.get('origin')!==new URL(req.url).origin)return json({error:'Cross-site request rejected.'},403);
   try{
-    const {id,action}=z.object({id:z.string().min(1).max(100),action:z.enum(['approve','suspend'])}).parse(await req.json());
+    const body:unknown=await req.json();
+    if((body as {action?:unknown}|null)?.action==='limit'){
+      // A workspace's monthly Bandwise AI allowance; null goes back to the default. Admins may set their own.
+      const {id,limit}=z.object({id:z.string().min(1).max(100),limit:z.number().int().min(0).max(100000).nullable()}).parse(body);
+      await setCreditLimit(id,limit);
+      return json({ok:true,message:limit===null?'Back to the default allowance.':'Allowance set to '+limit+' credits a month.'});
+    }
+    const {id,action}=z.object({id:z.string().min(1).max(100),action:z.enum(['approve','suspend'])}).parse(body);
     if(id===me.teacher.userId)throw new Error('You can’t change your own workspace.');
     await setWorkspaceStatus(id,action==='approve'?'active':'suspended');
     let message=action==='approve'?'Approved.':'Paused. They can no longer open the studio.';

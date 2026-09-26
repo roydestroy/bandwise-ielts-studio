@@ -120,8 +120,11 @@ Cloudflare Access still protects the app. The links go only to the teacher's sel
 | `PLATFORM_AI_MODE` | Variable | `test` (default) or `live`. |
 | `PLATFORM_AI_TEST_USERS` | Variable | In test mode, the comma-separated sign-in emails that may use it. Nobody else sees it. |
 | `PLATFORM_GEMINI_MODEL` | Variable | Optional model ID; defaults to `gemini-2.5-flash`. |
+| `PLATFORM_MONTHLY_CREDITS` | Variable | Optional monthly Bandwise AI allowance per teacher, in credits (a writing assessment is 1, a speaking test 3). Defaults to 150. Change one teacher's allowance under **Admin panel → Usage and pricing**. |
 
 **Test mode is for sample work only.** On Google's free tier, Google may use what you send to improve its products. The settings page warns testers about this. Before switching to `live`, which offers it to every teacher, replace the key with one from a billing-enabled (paid) Google project. Paid-tier content is not used that way. Then run the deploy workflow again.
+
+**Spend limit.** Each teacher's Bandwise AI use is capped at a monthly allowance of credits. An assessment is charged once a month however often it is re-run. A teacher who runs out sees when the allowance renews, and can keep working with their own AI key, which is never limited. Teachers see their allowance under **Settings → AI usage**.
 
 ### 7. Optional: email progress reports
 

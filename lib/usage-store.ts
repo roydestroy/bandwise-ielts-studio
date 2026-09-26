@@ -42,6 +42,8 @@ export async function adminUsage(month:string){
     db.prepare(`SELECT owner,
         COUNT(DISTINCT CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Writing' THEN assessment_id END) AS writing,
         COUNT(DISTINCT CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Speaking' THEN assessment_id END) AS speaking,
+        COUNT(DISTINCT CASE WHEN platform = 1 AND assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Writing' THEN assessment_id END) AS platformWriting,
+        COUNT(DISTINCT CASE WHEN platform = 1 AND assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Speaking' THEN assessment_id END) AS platformSpeaking,
         COALESCE(SUM(CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Writing' THEN cost_usd END),0) AS writingCost,
         COALESCE(SUM(CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Speaking' THEN cost_usd END),0) AS speakingCost,
         COALESCE(SUM(cost_usd),0) AS cost,COALESCE(SUM(CASE WHEN platform = 1 THEN cost_usd END),0) AS platformCost,SUM(cost_usd IS NULL) AS unpriced,COUNT(*) AS requests
@@ -51,7 +53,7 @@ export async function adminUsage(month:string){
         SUM(input_tokens) AS inputTokens,SUM(audio_tokens) AS audioTokens,SUM(output_tokens) AS outputTokens
       FROM usage_events WHERE created_at LIKE ? AND assessment_id IS NOT NULL AND action IN ('transcribe','assess') GROUP BY skill,provider,model,platform ORDER BY skill DESC,assessments DESC`).bind(like),
   ]);
-  type U={owner:string;writing:number;speaking:number;writingCost:number;speakingCost:number;cost:number;platformCost:number;unpriced:number;requests:number};
+  type U={owner:string;writing:number;speaking:number;platformWriting:number;platformSpeaking:number;writingCost:number;speakingCost:number;cost:number;platformCost:number;unpriced:number;requests:number};
   type S={owner:string;saved:number;reviewed:number};
   return {
     months:(months.results as {month:string}[]).map(m=>m.month),

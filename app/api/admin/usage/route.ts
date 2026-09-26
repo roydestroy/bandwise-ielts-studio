@@ -1,4 +1,7 @@
+import {env} from 'cloudflare:workers';
 import {currentAccount} from '@/app/access-auth';
+import {monthlyLimit} from '@/lib/ai-credits';
+import {CREDITS} from '@/lib/pilot-stats';
 import {listWorkspaces} from '@/lib/workspaces';
 import {adminUsage} from '@/lib/usage-store';
 import type {WorkspaceUsage} from '@/lib/pilot-stats';
@@ -16,10 +19,13 @@ export async function GET(req:Request){
       id:w.id,name:w.name,email:w.email,students:w.students,
       writing:x?.writing??0,speaking:x?.speaking??0,writingCost:x?.writingCost??0,speakingCost:x?.speakingCost??0,saved:s?.saved??0,reviewed:s?.reviewed??0,
       cost:x?.cost??0,platformCost:x?.platformCost??0,unpriced:x?.unpriced??0,requests:x?.requests??0,
+      platformCredits:(x?.platformWriting??0)*CREDITS.writing+(x?.platformSpeaking??0)*CREDITS.speaking,
+      creditLimit:monthlyLimit(env.PLATFORM_MONTHLY_CREDITS,w.ai_credit_limit),customLimit:w.ai_credit_limit!==null,
     };});
     // Usage from a workspace that isn't listed (deleted, or a legacy owner) still counts towards the totals.
-    for(const [owner,x] of u.usage)if(!workspaces.some(w=>w.id===owner))rows.push({id:owner,name:null,email:null,students:0,saved:u.saved.get(owner)?.saved??0,reviewed:u.saved.get(owner)?.reviewed??0,...x});
+    for(const [owner,x] of u.usage)if(!workspaces.some(w=>w.id===owner))rows.push({id:owner,name:null,email:null,students:0,saved:u.saved.get(owner)?.saved??0,reviewed:u.saved.get(owner)?.reviewed??0,...x,
+      platformCredits:x.platformWriting*CREDITS.writing+x.platformSpeaking*CREDITS.speaking,creditLimit:monthlyLimit(env.PLATFORM_MONTHLY_CREDITS,null),customLimit:false});
     const months=u.months.includes(month)?u.months:[month,...u.months].sort().reverse();
-    return json({month,months,me:a.teacher.userId,rows,models:u.models});
+    return json({month,months,me:a.teacher.userId,rows,models:u.models,defaultLimit:monthlyLimit(env.PLATFORM_MONTHLY_CREDITS,null)});
   }catch{return json({error:'Usage is temporarily unavailable. Please retry.'},503)}
 }
