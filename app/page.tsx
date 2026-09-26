@@ -1,5 +1,6 @@
 import type {Metadata} from 'next';
-import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check,Printer,Target,ListChecks,Quote} from 'lucide-react';
+import Link from 'next/link';
+import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check,Printer,Target,ListChecks,Quote,Palette} from 'lucide-react';
 
 // The public landing page. The studio itself lives at /app, behind sign-in.
 const CONTACT_EMAIL='panagoulix@gmail.com';
@@ -15,7 +16,7 @@ const features=[
   {icon:Mic,tone:'speaking',title:'Speaking',text:'Record the test in the browser or upload a recording. It is assessed from the audio itself, so feedback on pronunciation is based on what the student actually said.'},
   {icon:Headphones,tone:'listening',title:'Reading & Listening',text:'Enter the raw score out of 40 and the band appears at once, with separate Academic and General Training Reading tables.'},
   {icon:ChartNoAxesCombined,tone:'progress',title:'Progress tracking',text:'Each student’s history per skill, their latest criterion profile, and a flag when practice falls below their university’s minimum band.'},
-  {icon:Mail,tone:'reports',title:'Reports for students',text:'A printable report for every piece of work, and progress reports emailed from your own address. Only work you have reviewed is included.'},
+  {icon:Mail,tone:'reports',title:'Reports for students',text:'A printable report for every piece of work, and progress reports emailed from your own address, under your own logo and colours. Only work you have reviewed is included.'},
   {icon:BookOpen,tone:'rubric',title:'Official descriptors',text:'Assessments are made against the published IELTS band descriptors, and the full-test band calculator combines results the way the real test does.'},
 ];
 
@@ -33,6 +34,9 @@ const reportCriteria=[
   {name:'Lexical Resource',band:'7.0',evidence:'Good range for the topic (“congestion charge”, “public transport network”), with occasional repetition of “cars”.',next:'Vary how you refer to the key subject: “private vehicles”, “drivers”, “car owners”.'},
 ];
 const progress=[['Test 1','5.5'],['Test 2','6.0'],['Test 3','6.5']] as const;
+// A made-up teacher brand for the samples, in a colour unlike Bandwise's to show it is theirs.
+const sampleBrand={name:'Northside English',contact:'northside-english.example',color:'#7a2e5c'};
+const BrandMark=()=><div className="lp-brandmark"><span style={{background:sampleBrand.color}}>N</span><div><b style={{color:sampleBrand.color}}>{sampleBrand.name}</b><small>{sampleBrand.contact}</small></div></div>;
 
 const faqs=[
   ['Is this an official IELTS score?','No. Bandwise gives a practice estimate to support your own judgement. You review, adjust and confirm every score before a student sees it.'],
@@ -44,7 +48,7 @@ const faqs=[
 export default function Landing(){
   return <div className="lp">
     <header className="lp-header">
-      <a href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></a>
+      <Link href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></Link>
       <nav aria-label="Main">
         <a href="#feedback">Feedback</a>
         <a href="#features">Features</a>
@@ -66,7 +70,7 @@ export default function Landing(){
           </div>
           <ul className="lp-points">
             <li><Check size={16}/> Feedback and next steps for each criterion</li>
-            <li><Check size={16}/> Printable and emailed student reports</li>
+            <li><Check size={16}/> Student reports under your own brand</li>
             <li><Check size={16}/> You review every score</li>
           </ul>
         </div>
@@ -101,8 +105,9 @@ export default function Landing(){
         <div className="lp-deliverables">
           <figure className="lp-doc" aria-label="Sample printable practice report">
             <figcaption><Printer size={16}/> Practice report · print or save as PDF</figcaption>
-            <div className="lp-paper">
-              <small>BANDWISE · IELTS PRACTICE REPORT</small>
+            <div className="lp-paper lp-branded" style={{borderTop:'4px solid '+sampleBrand.color}}>
+              <BrandMark/>
+              <small>IELTS PRACTICE REPORT</small>
               <h3>Maria K. · Writing Task 2 · Cities and car ownership</h3>
               <p className="lp-paper-band">Practice estimate: <b>6.5 / 9</b></p>
               <p>A clear, relevant answer with a consistent position. Ideas need fuller development, and a few complex sentences lose control.</p>
@@ -112,18 +117,25 @@ export default function Landing(){
                 <p><b>Next step:</b> {c.next}</p>
               </div>)}
               <p className="lp-paper-more">+ Coherence and Cohesion, Grammatical Range and Accuracy, and your notes</p>
+              <p className="lp-made-with">Made with Bandwise</p>
             </div>
           </figure>
           <figure className="lp-doc" aria-label="Sample emailed progress report">
             <figcaption><Mail size={16}/> Progress report · emailed from your address</figcaption>
-            <div className="lp-paper lp-email">
+            <div className="lp-paper lp-email" style={{borderTop:'4px solid '+sampleBrand.color}}>
               <p className="lp-email-meta"><b>Your IELTS progress report — Maria K.</b><br/>From: your own mailbox</p>
+              <BrandMark/>
               <p className="lp-email-note">“Great progress this month, Maria. Let’s focus on developing your examples before the mock test.”</p>
               <h4>Overall band by practice test</h4>
               {progress.map(([test,band])=><div className="lp-crit" key={test}><span>{test}</span><div className="bar-track"><div style={{width:(Number(band)/9*100)+'%'}}/></div><b>{band}</b></div>)}
               <p className="lp-paper-more">+ latest band in each skill, progress in each skill over time, all against their target band</p>
+              <p className="lp-made-with">Made with Bandwise</p>
             </div>
           </figure>
+        </div>
+        <div className="lp-own-brand">
+          <span className="icon-box"><Palette size={20}/></span>
+          <div><h3>Your brand, not ours</h3><p>Add your logo, your name or school, and your colour once in Settings. Every printed report and progress email then goes out under your brand, with just a small “Made with Bandwise” line at the end. Students see your service, not a tool.</p></div>
         </div>
       </section>
 

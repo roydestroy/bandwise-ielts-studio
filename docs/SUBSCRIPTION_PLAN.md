@@ -212,6 +212,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | 2026-09-26 | EU move deferred; landing page built | EU jurisdiction only adds a storage guarantee (useful for schools); it doesn't change speed, cost or legality, and AI providers may still process outside the EU. Revisit before launch. Landing page uses an email link for early access instead of a form, to avoid a public write endpoint before Turnstile exists. |
 | 2026-09-26 | Metering before hosted AI | Usage is recorded while teachers still use their own keys, so plan prices can be set from real costs before Bandwise pays for AI itself. Costs are estimated at write time from list prices; tokens are kept so costs can be recalculated if prices change. |
 | 2026-09-26 | Free Gemini key until launch | No AI spend before launch. The free tier lets Google use requests to improve its products, so Bandwise AI stays in test mode (named testers, sample work only) until a paid key replaces it. Teachers keep using their own keys meanwhile. |
+| 2026-09-26 | Teacher branding on reports | Teachers put their own name, logo and colour on printed and emailed reports, with a small "Made with Bandwise" line. This is a selling point for tutors and schools, and later a possible plan feature (e.g. removing the Bandwise line on School plans). |
 
 ## Sources (checked 2026-09-26)
 
