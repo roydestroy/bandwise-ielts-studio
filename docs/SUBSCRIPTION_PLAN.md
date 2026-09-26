@@ -6,11 +6,11 @@ A working plan for making Bandwise a public, paid product: hosted AI instead of 
 
 | Area | Today | Why it blocks a paid product |
 | --- | --- | --- |
-| Sign-in | Cloudflare Access in front of the whole hostname, with a hand-maintained email allowlist (`app/access-auth.ts`, `lib/access.ts`). Live: 4 allowed emails, 2 seats used, login by one-time PIN or Cloudflare account, 24 h sessions. | Nobody can sign themselves up, and no page is public. Zero Trust is free for 50 users, then about **$7 per user per month**, which is more than a cheap plan would bring in. |
-| AI | Each teacher pastes their own OpenAI / Gemini / Claude / Qwen key, which is stored encrypted (`lib/provider-store.ts`). There is already a site-wide `OPENAI_API_KEY` fallback. | Most teachers won't create an API account. There is no metering or per-user limit. |
-| Pages | One client page, `app/page.tsx`, is the whole studio. | There is no landing page, pricing page or legal pages. |
-| Data model | Every row is keyed by `owner` = the Access user ID. Live: one owner, 1 student, 10 assessments, ≈ 0.16 MB in D1 and ≈ 17 MB in R2. | There is no concept of an account, plan, seat or usage. |
-| Billing, email, abuse protection | None. Reports go out through each teacher's own SMTP mailbox. | The service needs payments, receipts, sign-up email, bot protection and rate limits. |
+| Sign-in | *Was:* Cloudflare Access with an email allowlist. *Now (live 2026-09-26):* Bandwise's own sign-in on `bandwiseapp.com` (Google or emailed code, Better Auth), with admin approval of new accounts. The Access app has been deleted. | Solved for the pilot. Still missing: Turnstile on sign-up. |
+| AI | *Was:* each teacher's own key only. *Now:* "Bandwise AI" on a platform Gemini key, **live for every approved teacher**, with 150 credits a month and metering in `usage_events`; own keys still work. | Confirm the Gemini key is on a billing-enabled project (the privacy policy promises Google's paid service). No AI Gateway or fallback provider yet. |
+| Pages | Public landing page with "Create a free account", privacy policy and terms; the studio is at `/app`. | No pricing page yet. |
+| Data model | Every row is keyed by `owner` = the workspace ID (the old Access user ID for existing teachers). `workspaces`, `memberships`, auth tables and `usage_events` exist. Live: one teacher, 1 student, 10 assessments, ≈ 0.29 MB in D1 and ≈ 17 MB in R2. | No plan, seat or billing fields on workspaces yet. |
+| Billing, email, abuse protection | Sign-in email via Cloudflare Email Service; sign-in rate limits in D1; monthly credit cap on Bandwise AI. Progress reports still go through each teacher's own SMTP mailbox. | Still needed: payments, bot protection (Turnstile), per-workspace request rate limits. |
 
 Most of the app can stay as it is. Nearly everything is already keyed by `owner`, and the AI layer already supports several providers behind a single `generate()` function. The work is mostly new code around the existing studio, not a rewrite.
 
@@ -133,7 +133,7 @@ Prerequisite outside the code: a registered business (sole trader or company) an
 | `/app/billing` | Signed-in users | Plan, credits, invoices. "Manage subscription" opens the Stripe customer portal. |
 | `/api/*` | Signed-in users (except webhooks) | Existing APIs, plus billing APIs |
 | `/api/webhooks/stripe` | Stripe (signature-checked) | Subscription events |
-| `/admin` | Only you (keep Cloudflare Access here) | Support tools: look up an account, grant credits |
+| `/app/admin` | Admins (`ADMIN_EMAILS`, checked by the app) | Support tools: approve accounts, usage and pricing, credit limits, accuracy, feedback (built) |
 
 ### Fast interim step (no auth rewrite)
 
@@ -146,11 +146,11 @@ Alternative: Clerk, which is quicker to set up but hosted and charged per monthl
 
 Changes:
 
-- [ ] Replace `getTeacher()` in `app/access-auth.ts` with a session-based `getUser()` that returns the same shape. Every route already calls it, so the API routes barely change.
-- [ ] **Add accounts ("workspaces").** Add a `workspaces` table (id, plan, Stripe customer ID, subscription status, period end, seat limit) and a `memberships` table (user ↔ workspace, role). Point the existing `owner` column at the **workspace ID** instead of the person. This is what makes School plans with shared students possible later.
-- [ ] **Migrate existing teachers.** R2 keys and every row use the old Access `sub` as `owner`. Rather than rewriting data and moving files, create each existing teacher's workspace **with the old `sub` as its ID** and link their new login to it by email. Nothing in D1 or R2 has to move.
+- [x] (done 2026-09-26) Replace `getTeacher()` in `app/access-auth.ts` with a session-based `getUser()` that returns the same shape. Every route already calls it, so the API routes barely change.
+- [x] (done 2026-09-26, without plan/Stripe fields yet) **Add accounts ("workspaces").** Add a `workspaces` table (id, plan, Stripe customer ID, subscription status, period end, seat limit) and a `memberships` table (user ↔ workspace, role). Point the existing `owner` column at the **workspace ID** instead of the person. This is what makes School plans with shared students possible later.
+- [x] (done 2026-09-26) **Migrate existing teachers.** R2 keys and every row use the old Access `sub` as `owner`. Rather than rewriting data and moving files, create each existing teacher's workspace **with the old `sub` as its ID** and link their new login to it by email. Nothing in D1 or R2 has to move.
 - [ ] Protect sign-up with Cloudflare Turnstile, require a verified email before the free credits are granted, and limit free trials by email domain and IP.
-- [ ] Transactional email (login codes, "credits running low") through Cloudflare Email Service or Resend. Stripe sends receipts and invoices itself. Teacher-to-student progress reports can keep using the teacher's own SMTP mailbox.
+- [x] (done 2026-09-26 for sign-in codes and admin notices, via Cloudflare Email Service) Transactional email (login codes, "credits running low") through Cloudflare Email Service or Resend. Stripe sends receipts and invoices itself. Teacher-to-student progress reports can keep using the teacher's own SMTP mailbox.
 
 ---
 
@@ -170,17 +170,17 @@ Changes:
 
 | Change | Why |
 | --- | --- |
-| **Keep Workers Paid** ($5/mo base). It was subscribed on 2026-09-25 but is **set to cancel on 2026-10-01**: undo the cancellation now. | The free plan's 10 ms CPU limit is already a known problem (README step 5), and the Worker has no R2 signed-link secrets to work around it. Paid also gives higher D1/R2 limits and 30-day D1 Time Travel for restores (7 days on Free). |
-| Narrow the **Access** application to `/admin` (after the auth switch) | Access would otherwise cost $7 per user above 50 users, and blocks the public pages. |
+| ~~**Keep Workers Paid**~~ (done: the cancellation was undone on 2026-09-26; it renews monthly). | The free plan's 10 ms CPU limit is already a known problem (README step 5), and the Worker has no R2 signed-link secrets to work around it. Paid also gives higher D1/R2 limits and 30-day D1 Time Travel for restores (7 days on Free). |
+| ~~Remove the **Access** application~~ (done 2026-09-26: deleted; `/app/admin` is protected by the app). Still to tidy: delete the unused "Teachers" policy and the 2 leftover seats, then drop the Access JWT fallback and the `ACCESS_*` variables from the code and deploy script. | Access would otherwise cost $7 per user above 50 users. |
 | **AI Gateway** `bandwise` | Logs, spend analytics, rate limits and provider fallback for the platform keys. |
-| **Turnstile** widget (none exist yet) | Bot protection on sign-up and login |
+| **Turnstile** widget (none exist yet; more urgent now that the landing page invites public sign-up) | Bot protection on sign-up and login |
 | **Rate Limiting** binding in `wrangler.json` (no rate-limit rules exist on the zone either) | Per-workspace AI request limits |
 | **Staging environment**: a Worker `bandwise-staging` with its own D1/R2 and Stripe *test mode*, deployed from PRs or a `staging` branch | Billing and auth changes must never be tested on production data |
 | **EU data location** (*deferred 2026-09-26: do it before launch if selling to schools*): the existing D1 database and R2 bucket are in `EEUR` (Eastern Europe) **without** an EU jurisdiction, i.e. a location hint, not a guarantee. Create D1 `bandwise` with jurisdiction `eu` and an R2 bucket with jurisdiction `eu`, and copy the data across **before launch**, while it is tiny (one teacher, ≈ 17 MB). The staging environment should use EU jurisdiction from the start. | GDPR, and schools will ask. Resources can't be moved in place, and the move only gets harder as data grows. |
 | **Cron Trigger** (daily) — Bandwise has none today (the only cron on the account belongs to the unrelated `classroom-files-cleanup` Worker) | Delete expired accounts, reconcile credits against Stripe, clean up orphaned files, export a D1 backup |
-| **Web Analytics** on the landing page (a site with automatic setup already exists for `eurognosi-remote.com`; add or confirm coverage for the Bandwise hostname) | Cookieless, so no cookie banner is needed for analytics |
-| **Zone hardening** on `eurognosi-remote.com`: Always Use HTTPS on (currently off), minimum TLS 1.2 (currently 1.0), SSL mode Full (strict) (currently Full) | Expected of a paid service; the zone is shared with other Eurognosi sites, so check those still work |
-| **New Worker secrets** | `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PLATFORM_GEMINI_API_KEY`, `PLATFORM_OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, email API key. Add them to `scripts/deploy.mjs` and the GitHub workflow the same way `PROVIDER_ENCRYPTION_KEY` is handled. |
+| **Web Analytics** on the landing page (a `bandwiseapp.com` site with automatic setup was created 2026-09-26; confirm the beacon appears on the Worker's pages, otherwise add the snippet manually) | Cookieless, so no cookie banner is needed for analytics |
+| **Zone hardening**: `bandwiseapp.com` already forces HTTPS with TLS ≥ 1.2; turn on **DNSSEC** there (one click, registered at Cloudflare) and confirm SSL mode is Full (strict). `eurognosi-remote.com` (now only a redirect for Bandwise) still has Always Use HTTPS off, TLS 1.0 and SSL Full | Expected of a paid service; the old zone is shared with other Eurognosi sites, so check those still work |
+| **New Worker secrets** | Done: `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `PLATFORM_GEMINI_API_KEY` (email uses the `send_email` binding, no API key). Still to add: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PLATFORM_OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`. Add them to `scripts/deploy.mjs` and the GitHub workflow the same way `PROVIDER_ENCRYPTION_KEY` is handled. |
 
 Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside the included usage, plus about $0 for AI Gateway, Turnstile and Web Analytics. AI and payment fees grow with revenue.
 
@@ -200,10 +200,10 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 
 | Phase | Outcome | Main work |
 | --- | --- | --- |
-| **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction before launch, if selling to schools (deferred). Register the business, apply for Stripe Managed Payments. Choose plan prices. |
+| **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). ~~Undo the Workers Paid cancellation~~ (done). Move D1/R2 to EU jurisdiction before launch, if selling to schools (deferred). Register the business, apply for Stripe Managed Payments. Choose plan prices. |
 | **1. Public landing page** | `/` is public, the studio is at `/app` | ~~Landing page, studio moved to `/app`~~ (built 2026-09-26; "Request early access" is an email link for now). ~~Deploy, narrow the Access paths to `/app` + `/api`~~ (live 2026-09-26). Landing page reworked around student feedback and reports. Still to do: Web Analytics for the hostname, pricing and legal pages. |
-| **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | ~~`usage_events` and the AI usage page~~ (built 2026-09-26). ~~Platform Gemini key~~ (test mode, free key, 2026-09-26). Still to do: AI Gateway, OpenAI fallback, paid key before going live, the accuracy test against teacher marks. |
-| **3. Self-service accounts** | Anyone can sign up and get a free trial | ~~Better Auth (Google + email code), workspaces with admin approval, linking existing Access teachers, transactional email via Cloudflare Email Service~~ (built 2026-09-26; setup in `docs/SIGN_IN_SETUP.md`). Still to do: switch Access off, Turnstile, staging environment, free-trial credits (with Phase 4). |
+| **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | ~~`usage_events` and the AI usage page~~ (built 2026-09-26). ~~Platform Gemini key~~ (test mode, free key, 2026-09-26). `PLATFORM_AI_MODE=live` since 2026-09-26. Still to do: **confirm the key is billing-enabled** (the privacy policy promises it), AI Gateway, OpenAI fallback, the accuracy test against teacher marks (6 marked so far). |
+| **3. Self-service accounts** | Anyone can sign up and get a free trial | ~~Better Auth (Google + email code), workspaces with admin approval, linking existing Access teachers, transactional email via Cloudflare Email Service~~ (built 2026-09-26; setup in `docs/SIGN_IN_SETUP.md`). ~~Switch Access off~~ (done 2026-09-26). Still to do: Turnstile, staging environment, free-trial credits (with Phase 4). |
 | **4. Billing** | Users can pay and credits are enforced | Stripe Checkout, portal, webhooks, credit ledger, 402 upgrade dialog, billing page. |
 | **5. Launch hardening** | Ready to advertise | Legal pages, account export and deletion, rate limits, monitoring and alerts, onboarding (sample student and essay), status and support email. |
 
@@ -217,8 +217,9 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | 2026-09-26 | Metering before hosted AI | Usage is recorded while teachers still use their own keys, so plan prices can be set from real costs before Bandwise pays for AI itself. Costs are estimated at write time from list prices; tokens are kept so costs can be recalculated if prices change. |
 | 2026-09-26 | Free Gemini key until launch | No AI spend before launch. The free tier lets Google use requests to improve its products, so Bandwise AI stays in test mode (named testers, sample work only) until a paid key replaces it. Teachers keep using their own keys meanwhile. |
 | 2026-09-26 | Teacher branding on reports | Teachers put their own name, logo and colour on printed and emailed reports, with a small "Made with Bandwise" line. This is a selling point for tutors and schools, and later a possible plan feature (e.g. removing the Bandwise line on School plans). |
-| 2026-09-26 | Sign-in: Google + email code, approval required | New accounts wait for admin approval while there is no billing. Emails go through Cloudflare Email Service; on the free Workers plan it only reaches verified addresses, so testers are verified by hand until Workers Paid is back. The app moved to zod 4, which Better Auth requires. |
+| 2026-09-26 | Sign-in: Google + email code, approval required | New accounts wait for admin approval while there is no billing. Emails go through Cloudflare Email Service; on the free Workers plan it only reaches verified addresses. (Workers Paid is active again, so codes reach any address.) The app moved to zod 4, which Better Auth requires. |
 | 2026-09-26 | Own domain: bandwiseapp.com; keep the name Bandwise | Moved before sign-in went live, because Google OAuth, Search Console, Email Service, cookies and emailed logo links are all tied to the hostname. `bandwise.com`/`.app` are taken (Bandwise LLC, a US web agency). Trademark mirrors show no live BANDWISE mark in the US or EU, so the name stays. Consider an EU trademark filing before launch. |
+| 2026-09-26 | Live account re-checked | Workers Paid renews (cancellation undone); Access app deleted; `bandwiseapp.com` live with sign-in and email; all nine migrations applied. Open: `PLATFORM_AI_MODE` is `live`, so the Gemini key must be on a billing-enabled project to match the privacy policy; Turnstile and DNSSEC not set up yet. See `INFRASTRUCTURE.md`. |
 
 ## Sources (checked 2026-09-26)
 
