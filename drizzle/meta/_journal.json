@@ -50,6 +50,13 @@
       "when": 1790446124220,
       "tag": "0006_colorful_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1790447526755,
+      "tag": "0007_next_ronan",
+      "breakpoints": true
     }
   ]
 }

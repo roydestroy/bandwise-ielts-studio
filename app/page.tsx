@@ -1,9 +1,9 @@
 import type {Metadata} from 'next';
 import Link from 'next/link';
 import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check,Printer,Target,ListChecks,Quote,Palette} from 'lucide-react';
+import {CONTACT_EMAIL} from '@/lib/legal';
 
 // The public landing page. The studio itself lives at /app, behind sign-in.
-const CONTACT_EMAIL='panagoulix@gmail.com';
 const accessLink='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('Bandwise early access')+'&body='+encodeURIComponent('Hi, I would like to try Bandwise.\n\nI teach IELTS as: (private tutor / school / other)\nRoughly how many students: \n');
 
 export const metadata:Metadata={
@@ -65,7 +65,7 @@ export default function Landing(){
         <a href="#features">Features</a>
         <a href="#how">How it works</a>
         <a href="#faq">FAQ</a>
-        <a href="/app" className="lp-signin">Sign in</a>
+        <a href="/login" className="lp-signin">Sign in</a>
       </nav>
     </header>
 
@@ -77,7 +77,7 @@ export default function Landing(){
           <p className="lp-lead">Bandwise drafts band estimates and written feedback for Writing and Speaking, criterion by criterion, with a clear next step for each. You review and adjust it, then give students a report they can act on and a progress record they can see improving.</p>
           <div className="lp-actions">
             <a className="primary" href={accessLink}>Request early access <ArrowRight size={17}/></a>
-            <a className="secondary" href="/app">Sign in</a>
+            <a className="secondary" href="/login">Sign in</a>
           </div>
           <ul className="lp-points">
             <li><Check size={16}/> Feedback and next steps for each criterion</li>
@@ -202,7 +202,7 @@ export default function Landing(){
     </main>
 
     <footer className="lp-footer">
-      <p>© {new Date().getFullYear()} Bandwise · <a href={'mailto:'+CONTACT_EMAIL}>{CONTACT_EMAIL}</a></p>
+      <p>© {new Date().getFullYear()} Bandwise · <a href={'mailto:'+CONTACT_EMAIL}>{CONTACT_EMAIL}</a> · <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms of Service</Link></p>
       <p>IELTS is a registered trademark of the British Council, IDP IELTS and Cambridge University Press &amp; Assessment. Bandwise is an independent practice tool and is not affiliated with or endorsed by them. Estimates are not official IELTS scores.</p>
     </footer>
   </div>;

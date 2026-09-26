@@ -1,0 +1,18 @@
+import Link from 'next/link';
+import {CONTACT_EMAIL,LEGAL_UPDATED} from '@/lib/legal';
+
+// Shared frame for the privacy policy and terms: readable column, brand header, links between the two.
+export default function LegalPage({title,children}:{title:string;children:React.ReactNode}){
+  return <div className="lp legal">
+    <header className="lp-header">
+      <Link href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></Link>
+      <nav aria-label="Legal"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="/login" className="lp-signin">Sign in</a></nav>
+    </header>
+    <main className="legal-body">
+      <h1>{title}</h1>
+      <p className="legal-updated">Last updated {LEGAL_UPDATED}</p>
+      {children}
+      <p className="legal-contact">Questions? Email <a href={'mailto:'+CONTACT_EMAIL}>{CONTACT_EMAIL}</a>.</p>
+    </main>
+  </div>;
+}
