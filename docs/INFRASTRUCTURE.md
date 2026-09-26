@@ -115,7 +115,7 @@ Both: storage class Standard, no bucket locks, no Sippy migration. Event notific
 | Item | Value |
 | --- | --- |
 | Team domain | `bandwise.cloudflareaccess.com` (the org was first created as a random `*.cloudflareaccess.com` name, then renamed) |
-| Applications | **1**: `bandwise`, self-hosted, public destination `bandwise.eurognosi-remote.com` (the **whole hostname, all paths**). **To change** once the landing-page release is deployed: protect only paths `app` and `api` (see [Public landing page](#public-landing-page)). Visible in the App Launcher. CORS preflight bypass off. |
+| Applications | **1**: `bandwise`, self-hosted, public destinations `bandwise.eurognosi-remote.com/app` and `bandwise.eurognosi-remote.com/api` (changed from the whole hostname on 2026-09-26; see [Public landing page](#public-landing-page)). Everything else, including `/`, is public. Visible in the App Launcher. CORS preflight bypass off. |
 | Policy | One reusable policy **"Teachers"**: Allow, include = 4 individual email rules. No groups, no exclude/require rules. |
 | Login methods | All configured IdPs are allowed (no restriction on the app): **One-time PIN** and **Cloudflare** (sign in with a Cloudflare account). No Google or other social IdP. Not auto-redirected. |
 | Session length | 24 h (application session) |
@@ -133,6 +133,7 @@ Since the landing-page release, the Worker serves:
 | `/` | Everyone | Landing page (`app/page.tsx`), server-rendered |
 | `/app` | Teachers, through Access | The studio (`app/app/page.tsx`), marked `noindex` |
 | `/api/*` | Teachers, through Access | Studio data. Every route also checks the Access JWT itself, so a gap in the Access paths returns 401, not data. |
+| `/brand/<id>` | Everyone | Teachers' report logos (PNG/JPEG from R2 `branding/<id>`), public so that emailed reports can show them. Random IDs, cached for a year, `nosniff` and `default-src 'none'`. |
 
 The Access app must cover `/app` **and** `/api`. Access adds the signed identity header only on protected paths, so if `/api` is left out the studio loads but cannot read any data. Order of changes: deploy the release first (until then `/app` doesn't exist), then edit the Access app's destinations.
 
@@ -245,3 +246,5 @@ npx wrangler r2 bucket list
 - 2026-09-26 — Landing-page release (on this branch, not yet deployed): `/` is a public landing page and the studio moved to `/app`. Added the path table and the Access change it needs.
 - 2026-09-26 — Metering release: migration `0004_stiff_doctor_spectrum` adds `usage_events` (one row per AI call, with tokens and estimated cost). The deploy workflow applies it automatically.
 - 2026-09-26 — Platform-AI release: migration `0005` adds `usage_events.platform`. The deploy now passes `PLATFORM_GEMINI_API_KEY` (secret) and `PLATFORM_AI_MODE` / `PLATFORM_AI_TEST_USERS` / `PLATFORM_GEMINI_MODEL` (vars) to the Worker.
+- 2026-09-26 — Access narrowed to `/app` and `/api`. Checked from outside: `/` returns 200 with all its assets, while `/app`, `/api/studio` and `/api/usage` redirect to the Access login.
+- 2026-09-26 — Report-branding release: migration `0006` adds the `branding` table. Logos are stored in R2 under `branding/` and served publicly at `/brand/<id>`.

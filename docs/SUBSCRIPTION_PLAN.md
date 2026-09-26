@@ -197,7 +197,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | Phase | Outcome | Main work |
 | --- | --- | --- |
 | **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction before launch, if selling to schools (deferred). Register the business, apply for Stripe Managed Payments. Choose plan prices. |
-| **1. Public landing page** | `/` is public, the studio is at `/app` | ~~Landing page, studio moved to `/app`~~ (built 2026-09-26; "Request early access" is an email link for now). Still to do: deploy, narrow the Access paths to `/app` + `/api`, turn on Web Analytics for the hostname, pricing and legal pages. |
+| **1. Public landing page** | `/` is public, the studio is at `/app` | ~~Landing page, studio moved to `/app`~~ (built 2026-09-26; "Request early access" is an email link for now). ~~Deploy, narrow the Access paths to `/app` + `/api`~~ (live 2026-09-26). Landing page reworked around student feedback and reports. Still to do: Web Analytics for the hostname, pricing and legal pages. |
 | **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | ~~`usage_events` and the AI usage page~~ (built 2026-09-26). ~~Platform Gemini key~~ (test mode, free key, 2026-09-26). Still to do: AI Gateway, OpenAI fallback, paid key before going live, the accuracy test against teacher marks. |
 | **3. Self-service accounts** | Anyone can sign up and get a free trial | Better Auth, workspaces, migration of existing teachers, Turnstile, transactional email, staging environment. |
 | **4. Billing** | Users can pay and credits are enforced | Stripe Checkout, portal, webhooks, credit ledger, 402 upgrade dialog, billing page. |
@@ -212,6 +212,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | 2026-09-26 | EU move deferred; landing page built | EU jurisdiction only adds a storage guarantee (useful for schools); it doesn't change speed, cost or legality, and AI providers may still process outside the EU. Revisit before launch. Landing page uses an email link for early access instead of a form, to avoid a public write endpoint before Turnstile exists. |
 | 2026-09-26 | Metering before hosted AI | Usage is recorded while teachers still use their own keys, so plan prices can be set from real costs before Bandwise pays for AI itself. Costs are estimated at write time from list prices; tokens are kept so costs can be recalculated if prices change. |
 | 2026-09-26 | Free Gemini key until launch | No AI spend before launch. The free tier lets Google use requests to improve its products, so Bandwise AI stays in test mode (named testers, sample work only) until a paid key replaces it. Teachers keep using their own keys meanwhile. |
+| 2026-09-26 | Teacher branding on reports | Teachers put their own name, logo and colour on printed and emailed reports, with a small "Made with Bandwise" line. This is a selling point for tutors and schools, and later a possible plan feature (e.g. removing the Bandwise line on School plans). |
 
 ## Sources (checked 2026-09-26)
 

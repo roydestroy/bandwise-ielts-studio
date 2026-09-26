@@ -1,5 +1,6 @@
 import {type Assessment,type Student,taskTypes,criteriaFor,isObjective,practiceBand,displayBand} from './ielts.ts';
 import {testResults,skills} from './band.ts';
+import type {ReportBrand} from './branding.ts';
 
 // Email-safe progress report. Charts are table-based bars: email clients strip scripts and inline SVG,
 // and many block images, but every major client renders table cells with widths and background colours.
@@ -8,7 +9,7 @@ const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;
 const day=(s:string)=>new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 const green='#277960',amber='#b9a258',track='#e2e9e6',ink='#1d2b25',muted='#6b7a73';
 
-export type ReportInput={student:Student;assessments:Assessment[];teacher:string;note?:string;now?:Date};
+export type ReportInput={student:Student;assessments:Assessment[];teacher:string;note?:string;now?:Date;brand?:ReportBrand|null};
 export type Report={subject:string;html:string;text:string;empty:boolean};
 type Row={label:string;band:number;sub?:string};
 
@@ -28,13 +29,18 @@ const note=(s:string)=>`<p style="margin:8px 0 0;font-size:12px;color:${muted}">
 const change=(values:number[])=>values.length>1?values[values.length-1]-values[0]:null;
 const signed=(n:number|null,digits=1)=>n===null?'—':(n>=0?'+':'')+n.toFixed(digits);
 
-export function buildProgressReport({student,assessments,teacher,note:teacherNote,now=new Date()}:ReportInput):Report{
+// The teacher's logo and name above the report, in their colour. Unbranded reports keep the standard header.
+function brandHeader(b:ReportBrand){
+  const logo=b.logoUrl?`<img src="${esc(b.logoUrl)}" alt="${esc(b.name)}" height="48" style="display:block;height:48px;width:auto;max-width:200px;border:0;margin-bottom:10px">`:'';
+  return `<tr><td style="padding:22px 28px 16px;border-bottom:1px solid ${track}">${logo}<div style="font-size:16px;font-weight:bold;color:${esc(b.color)}">${esc(b.name)}</div>${b.contact?`<div style="font-size:12px;color:${muted};margin-top:2px">${esc(b.contact)}</div>`:''}</td></tr>`;
+}
+export function buildProgressReport({student,assessments,teacher,note:teacherNote,now=new Date(),brand}:ReportInput):Report{
   const mine=assessments.filter(a=>a.student_id===student.id);
   const reviewed=mine.filter(a=>a.status==='Reviewed'&&practiceBand(a)!==null).sort((a,b)=>a.created_at.localeCompare(b.created_at));
   const complete=testResults(mine,practiceBand).filter(r=>r.overall!==null).sort((a,b)=>a.updated.localeCompare(b.updated));
   const overall=complete.map(r=>r.overall!);
   const latestOverall=overall.at(-1)??null;
-  const text:string[]=[`IELTS progress report for ${student.name} — ${day(now.toISOString())}`,'',`Target band: ${student.target.toFixed(1)}`];
+  const text:string[]=[...(brand?[brand.name+(brand.contact?' · '+brand.contact:''),'']:[]),`IELTS progress report for ${student.name} — ${day(now.toISOString())}`,'',`Target band: ${student.target.toFixed(1)}`];
   if(student.min_band!=null)text.push(`University minimum: ${student.min_band.toFixed(1)}`);
   const parts:string[]=[];
 
@@ -81,11 +87,12 @@ export function buildProgressReport({student,assessments,teacher,note:teacherNot
   if(cleanNote)text.splice(1,0,'',cleanNote);
   const html=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IELTS progress report</title></head>`+
     `<body style="margin:0;padding:0;background:#eef3f1;font-family:Arial,Helvetica,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef3f1"><tr><td align="center" style="padding:24px 12px">`+
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border-radius:12px">`+
-    `<tr><td style="padding:26px 28px 0"><div style="font-size:11px;letter-spacing:.08em;color:${green};font-weight:bold">IELTS PROGRESS REPORT</div><h1 style="margin:6px 0 2px;font-size:24px;color:${ink}">${esc(student.name)}</h1><div style="font-size:13px;color:${muted}">${esc(student.track)} · ${day(now.toISOString())} · from ${esc(teacher)}</div>`+
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border-radius:12px${brand?`;border-top:5px solid ${esc(brand.color)}`:''}">`+
+    (brand?brandHeader(brand):'')+
+    `<tr><td style="padding:26px 28px 0"><div style="font-size:11px;letter-spacing:.08em;color:${brand?esc(brand.color):green};font-weight:bold">IELTS PROGRESS REPORT</div><h1 style="margin:6px 0 2px;font-size:24px;color:${ink}">${esc(student.name)}</h1><div style="font-size:13px;color:${muted}">${esc(student.track)} · ${day(now.toISOString())} · from ${esc(teacher)}</div>`+
     (cleanNote?`<div style="margin-top:16px;padding:12px 14px;background:#f7f4e8;border-left:3px solid ${amber};font-size:14px;color:${ink};white-space:pre-wrap">${esc(cleanNote)}</div>`:'')+`</td></tr>`+
     parts.join('')+
-    `<tr><td style="padding:22px 28px 26px">${note('These are practice estimates from teacher-reviewed work, not official IELTS results. Different prompts and test conditions affect how closely results compare.')}</td></tr>`+
+    `<tr><td style="padding:22px 28px 26px">${note('These are practice estimates from teacher-reviewed work, not official IELTS results. Different prompts and test conditions affect how closely results compare.')}${brand?note('Made with Bandwise'):''}</td></tr>`+
     `</table></td></tr></table></body></html>`;
   text.push('','These are practice estimates from teacher-reviewed work, not official IELTS results.');
   return {subject:`Your IELTS progress report — ${student.name}`,html,text:text.join('\n'),empty:!reviewed.length};

@@ -127,6 +127,14 @@ No deployment setting is needed. Each teacher opens **Settings → Email** in th
 
 Cloudflare Workers cannot use port 25, so use port 465 (SSL/TLS) or 587/2525 (STARTTLS). Then add an email address to a student and choose **Email report** on the Students or Progress page. You see a preview and can add a personal note before sending. Reports include only teacher-reviewed work.
 
+### 8. Report branding (no setup needed)
+
+Each teacher can put their own name or school, contact line, colour and logo on the reports students receive. They set this in **Settings → Branding**. It applies to the printable practice report and the emailed progress report, and each report ends with a small "Made with Bandwise" line.
+
+- **Logo files:** PNG or JPEG only, under 500 KB. The file type is checked from the file's contents. SVG is refused because it can carry scripts.
+- **Colour:** must be dark enough to read on white.
+- **Where logos live:** in R2 under `branding/<random id>`. They are served publicly at `/brand/<id>`, outside the Access-protected `/app` and `/api`, so email apps can load them. A new upload gets a new ID and the old file is deleted.
+
 ## Local development
 
 Install Node.js 24 and run:
