@@ -1,5 +1,4 @@
 import type {Metadata} from 'next';
-import Link from 'next/link';
 import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check,Printer,Target,ListChecks,Quote,Palette} from 'lucide-react';
 import {CONTACT_EMAIL} from '@/lib/legal';
 
@@ -59,7 +58,7 @@ const faqs=[
 export default function Landing(){
   return <div className="lp">
     <header className="lp-header">
-      <Link href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></Link>
+      <a href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></a>
       <nav aria-label="Main">
         <a href="#feedback">Feedback</a>
         <a href="#features">Features</a>
@@ -202,7 +201,7 @@ export default function Landing(){
     </main>
 
     <footer className="lp-footer">
-      <p>© {new Date().getFullYear()} Bandwise · <a href={'mailto:'+CONTACT_EMAIL}>{CONTACT_EMAIL}</a> · <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms of Service</Link></p>
+      <p>© {new Date().getFullYear()} Bandwise · <a href={'mailto:'+CONTACT_EMAIL}>{CONTACT_EMAIL}</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Service</a></p>
       <p>IELTS is a registered trademark of the British Council, IDP IELTS and Cambridge University Press &amp; Assessment. Bandwise is an independent practice tool and is not affiliated with or endorsed by them. Estimates are not official IELTS scores.</p>
     </footer>
   </div>;

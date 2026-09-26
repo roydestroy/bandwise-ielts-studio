@@ -1,5 +1,4 @@
 import type {Metadata} from 'next';
-import Link from 'next/link';
 import LegalPage from '../legal-page';
 import {OPERATOR,CONTACT_EMAIL} from '@/lib/legal';
 
@@ -63,6 +62,6 @@ export default function Privacy(){
     <h2>11. Changes</h2>
     <p>If we change this policy, we will update the date above and, for significant changes, tell signed-up teachers by email before they take effect.</p>
 
-    <p>See also our <Link href="/terms">Terms of Service</Link>.</p>
+    <p>See also our <a href="/terms">Terms of Service</a>.</p>
   </LegalPage>;
 }

@@ -12,7 +12,21 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated or third-party: build output, local Wrangler state, and PDF.js copied in at build time.
+    "dist/**",
+    ".wrangler/**",
+    "public/pdfjs/**",
   ]),
+  {
+    // vinext's client-side <Link> fails in production builds ("e is not a function"), so the site uses plain
+    // links and full page loads, which Next's lint rule would otherwise flag.
+    rules: {
+      "@next/next/no-html-link-for-pages": "off",
+      // Images here are teachers' logos and uploaded work served from R2 at their own size; the Worker has no
+      // image optimizer for <Image> to use.
+      "@next/next/no-img-element": "off",
+    },
+  },
   {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
     rules: {

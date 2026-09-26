@@ -4,12 +4,13 @@ import {toast} from 'sonner';
 import {LoaderCircle,Mail,Send} from 'lucide-react';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
-import {readJson} from '@/lib/read-json';
+import {readJson,type ApiReply} from '@/lib/read-json';
 import {mailPresets,mailPorts,type MailState} from '@/lib/email-settings';
 import type {Student} from '@/lib/ielts';
 
-async function call(body:object){const r=await fetch('/api/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d:any=await readJson(r);if(!r.ok)throw new Error(d.error||'Could not complete the request.');return d;}
-async function loadState():Promise<MailState>{const r=await fetch('/api/email',{cache:'no-store'});const d:any=await readJson(r);if(!r.ok)throw new Error(d.error);return d;}
+type Preview={html:string;subject:string;empty:boolean};
+async function call<T extends object=ApiReply>(body:object){const r=await fetch('/api/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await readJson<T>(r);if(!r.ok)throw new Error(d.error||'Could not complete the request.');return d;}
+async function loadState():Promise<MailState>{const r=await fetch('/api/email',{cache:'no-store'});const d=await readJson<MailState>(r);if(!r.ok)throw new Error(d.error);return d;}
 function Choice({value,change,items,label}:{value:string;change:(v:string)=>void;items:{id:string;name:string}[];label:string}){return <Select value={value} onValueChange={change}><SelectTrigger aria-label={label} className="picker"><SelectValue/></SelectTrigger><SelectContent>{items.map(x=><SelectItem key={x.id} value={x.id}>{x.name}</SelectItem>)}</SelectContent></Select>}
 
 export default function EmailSettings(){
@@ -59,9 +60,9 @@ export function ReportDialog({student,onClose,openSettings}:{student:Student|nul
   const id=student?.id;
   // Keyed by student in the parent, so state starts fresh for each student.
   useEffect(()=>{if(!id)return;let live=true;
-    Promise.all([loadState(),call({action:'preview',id})]).then(([m,p])=>{if(live){setMail(m);setPreview(p)}}).catch(e=>{if(live)setError(e.message)});
+    Promise.all([loadState(),call<Preview>({action:'preview',id})]).then(([m,p])=>{if(live){setMail(m);setPreview(p)}}).catch(e=>{if(live)setError(e.message)});
     return()=>{live=false}},[id]);
-  const refresh=async()=>{if(!id)return;setBusy('preview');setError('');try{setPreview(await call({action:'preview',id,note}))}catch(e){setError((e as Error).message)}finally{setBusy('')}};
+  const refresh=async()=>{if(!id)return;setBusy('preview');setError('');try{setPreview(await call<Preview>({action:'preview',id,note}))}catch(e){setError((e as Error).message)}finally{setBusy('')}};
   const send=async()=>{if(!id)return;setBusy('send');setError('');try{const d=await call({action:'send',id,note});toast.success(d.message);onClose()}catch(e){setError((e as Error).message)}finally{setBusy('')}};
   const ready=!!mail?.config&&!!student?.email;
   return <Dialog open={!!student} onOpenChange={open=>{if(!open&&!busy)onClose()}}><DialogContent className="upload-dialog report-dialog">

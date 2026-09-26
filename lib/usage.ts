@@ -7,9 +7,9 @@ import type {ProviderId} from './providers';
 export type Usage={provider:ProviderId;model:string;kind:'text'|'audio';inputTokens:number;audioTokens:number;outputTokens:number;platform?:true};
 
 // The parts of each provider's usage block that are read here. Every field is optional: providers omit them.
-type OpenAIStyleUsage={input_tokens?:number;output_tokens?:number;prompt_tokens?:number;completion_tokens?:number;prompt_tokens_details?:{audio_tokens?:number}};
-type GeminiUsage={promptTokenCount?:number;candidatesTokenCount?:number;thoughtsTokenCount?:number;promptTokensDetails?:{modality?:string;tokenCount?:number}[]};
-type ClaudeUsage={input_tokens?:number;output_tokens?:number;cache_creation_input_tokens?:number;cache_read_input_tokens?:number};
+export type OpenAIStyleUsage={input_tokens?:number;output_tokens?:number;prompt_tokens?:number;completion_tokens?:number;prompt_tokens_details?:{audio_tokens?:number}};
+export type GeminiUsage={promptTokenCount?:number;candidatesTokenCount?:number;thoughtsTokenCount?:number;promptTokensDetails?:{modality?:string;tokenCount?:number}[]};
+export type ClaudeUsage={input_tokens?:number;output_tokens?:number;cache_creation_input_tokens?:number;cache_read_input_tokens?:number};
 
 const n=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>0?Math.round(v):0;
 const usage=(provider:ProviderId,model:string,audio:boolean,input:number,audioIn:number,output:number):Usage=>({provider,model,kind:audio?'audio':'text',inputTokens:Math.max(0,input-audioIn),audioTokens:audioIn,outputTokens:output});
