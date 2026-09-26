@@ -4,7 +4,6 @@ import {CONTACT_EMAIL} from '@/lib/legal';
 import BrandMark from '@/app/brand-mark';
 
 // The public landing page. The studio itself lives at /app, behind sign-in.
-const accessLink='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('Bandwise early access')+'&body='+encodeURIComponent('Hi, I would like to try Bandwise.\n\nI teach IELTS as: (private tutor / school / other)\nRoughly how many students: \n');
 
 export const metadata:Metadata={
   title:'Bandwise | IELTS marking support for teachers',
@@ -51,8 +50,9 @@ const SampleBrandMark=()=><div className="lp-brandmark">
 
 const faqs=[
   ['Is this an official IELTS score?','No. Bandwise gives a practice estimate to support your own judgement. You review, adjust and confirm every score before a student sees it.'],
-  ['Do I need an AI account or API key?','During early access, yes: you connect your own key for OpenAI, Gemini, Claude or Qwen in Settings, and the provider bills you directly. A built-in option that needs no key is on the way.'],
-  ['Where is student work stored?','On Cloudflare, in private storage. Each teacher has a separate workspace, and files are only sent to the AI provider you choose when you ask for an assessment.'],
+  ['Do I need an AI account or API key?','No. AI marking is built in: every account includes a monthly allowance of Bandwise AI credits, where a writing assessment uses 1 and a speaking test 3. If you prefer, you can connect your own OpenAI, Gemini, Claude or Qwen key in Settings instead. Your own key has no allowance, and the provider bills you directly.'],
+  ['What does it cost?','Nothing during early access. Paid plans will come later; we’ll tell you well in advance, and you’ll only pay if you choose a plan.'],
+  ['Where is student work stored?','On Cloudflare, in private storage. Each teacher has a separate workspace. Work is sent to the AI provider only when you ask for an assessment: Google Gemini for Bandwise AI, or the provider whose key you connect. It isn’t used to train AI models.'],
   ['Does it include Cambridge test material?','No. You can tag work with a Cambridge book and test number to keep things organised, but no test passages, audio or questions are stored or reproduced.'],
 ];
 
@@ -76,9 +76,10 @@ export default function Landing(){
           <h1>Detailed IELTS feedback for every student, in a fraction of the marking time.</h1>
           <p className="lp-lead">Bandwise drafts band estimates and written feedback for Writing and Speaking, criterion by criterion, with a clear next step for each. You review and adjust it, then give students a report they can act on and a progress record they can see improving.</p>
           <div className="lp-actions">
-            <a className="primary" href={accessLink}>Request early access <ArrowRight size={17}/></a>
+            <a className="primary" href="/login">Create a free account <ArrowRight size={17}/></a>
             <a className="secondary" href="/login">Sign in</a>
           </div>
+          <p className="lp-note">Free during early access, with AI marking included. No API key needed.</p>
           <ul className="lp-points">
             <li><Check size={16}/> Feedback and next steps for each criterion</li>
             <li><Check size={16}/> Student reports under your own brand</li>
@@ -195,9 +196,9 @@ export default function Landing(){
       </section>
 
       <section className="lp-cta">
-        <h2>Bandwise is opening to a small group of teachers first.</h2>
-        <p>Tell us a little about how you teach and we’ll get you set up.</p>
-        <a className="primary" href={accessLink}>Request early access <ArrowRight size={17}/></a>
+        <h2>Try Bandwise free during early access.</h2>
+        <p>Create an account with Google or your email. We approve new accounts by hand and email you as soon as yours is ready. AI marking is included.</p>
+        <a className="primary" href="/login">Create a free account <ArrowRight size={17}/></a>
       </section>
     </main>
 
