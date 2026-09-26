@@ -32,3 +32,12 @@ test('calls on the platform key are marked in usage',async()=>{
   assert.equal(usage[0].platform,true);
   assert.equal('platform' in usage[1],false);
 });
+
+test('email lists accept commas, semicolons, spaces and new lines',async()=>{
+  const {emailList,inEmailList}=await import('../lib/email-list.ts');
+  assert.deepEqual(emailList('panagoulix@gmail.com\neurognosi.fni@gmail.com'),['panagoulix@gmail.com','eurognosi.fni@gmail.com']);
+  assert.deepEqual(emailList(' A@x.com ; b@x.com,c@x.com  d@x.com\r\n'),['a@x.com','b@x.com','c@x.com','d@x.com']);
+  assert.equal(inEmailList('panagoulix@gmail.com\neurognosi.fni@gmail.com','Eurognosi.FNI@gmail.com'),true);
+  assert.equal(inEmailList(undefined,'a@x.com'),false);
+  assert.equal(platformAllowed({...key,PLATFORM_AI_TEST_USERS:'one@x.com\ntwo@x.com'},'two@x.com'),true);
+});

@@ -1,4 +1,5 @@
 import type {ProviderConnection} from './providers';
+import {inEmailList} from './email-list.ts';
 
 // "Bandwise AI": assessments run on Bandwise's own Gemini key instead of the teacher's. In test mode (the
 // default) only the emails in PLATFORM_AI_TEST_USERS see it, because the key may be a free-tier key whose
@@ -14,8 +15,7 @@ const model=(e:PlatformEnv)=>e.PLATFORM_GEMINI_MODEL?.trim()||DEFAULT_MODEL;
 export function platformAllowed(e:PlatformEnv,email:string){
   if(!e.PLATFORM_GEMINI_API_KEY)return false;
   if(isLive(e))return true;
-  const testers=(e.PLATFORM_AI_TEST_USERS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
-  return testers.includes(email.trim().toLowerCase());
+  return inEmailList(e.PLATFORM_AI_TEST_USERS,email);
 }
 export function platformInfo(e:PlatformEnv,email:string):PlatformInfo{
   return {available:platformAllowed(e,email),test:!isLive(e),name:isLive(e)?'Bandwise AI':'Bandwise AI (test mode)',model:model(e)};

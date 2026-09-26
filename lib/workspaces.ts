@@ -1,5 +1,6 @@
 import {env} from 'cloudflare:workers';
 import {database} from './storage';
+import {inEmailList} from './email-list';
 
 // A workspace owns a teacher's students, assessments and settings: its ID is the `owner` on every row.
 export type WorkspaceStatus='pending'|'active'|'suspended';
@@ -13,6 +14,8 @@ export async function workspaceForUser(user:{id:string;email:string;emailVerifie
   const db=database();
   const find=()=>db.prepare('SELECT w.id,w.status FROM memberships m JOIN workspaces w ON w.id = m.workspace_id WHERE m.user_id = ?').bind(user.id).first<Workspace>();
   const existing=await find();
+  // An address added to ADMIN_EMAILS after it signed up would otherwise wait for an approval nobody can give.
+  if(existing?.status==='pending'&&user.emailVerified&&isAdminEmail(user.email)){await setWorkspaceStatus(existing.id,'active');return {...existing,status:'active'};}
   if(existing)return existing;
   const legacy=user.emailVerified?await db.prepare('SELECT workspace_id FROM access_identities WHERE email = ?').bind(user.email.toLowerCase()).first<{workspace_id:string}>():null;
   const id=legacy?.workspace_id??crypto.randomUUID();const at=now();
@@ -57,7 +60,7 @@ async function relinkEmptyAccount(email:string,workspaceId:string){
 }
 
 export function isAdminEmail(email:string){
-  return (env.ADMIN_EMAILS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean).includes(email.trim().toLowerCase());
+  return inEmailList(env.ADMIN_EMAILS,email);
 }
 
 export type WorkspaceRow={id:string;status:WorkspaceStatus;created_at:string;approved_at:string|null;email:string|null;name:string|null;students:number};
