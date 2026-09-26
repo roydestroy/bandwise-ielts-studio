@@ -2,6 +2,8 @@
 
 A standalone teacher workspace for IELTS practice across all four skills — writing, speaking, reading and listening. Manage the source in GitHub and deploy it to **Cloudflare Workers**. The database and uploads live in your Cloudflare account. No ChatGPT Sites account is needed to run it.
 
+> **Planning docs:** [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md) records every Cloudflare, GitHub and outside resource the app uses. [`docs/SUBSCRIPTION_PLAN.md`](docs/SUBSCRIPTION_PLAN.md) is the plan for turning Bandwise into a paid subscription service.
+
 This copy starts empty. It contains no test students, assessments, uploads, provider keys or credentials from the earlier hosted site.
 
 ## What is included
@@ -43,7 +45,7 @@ If the domain is already an active zone on the same Cloudflare account, you can 
 
 ### 2. Set up teacher sign-in
 
-In Cloudflare Zero Trust, create a **self-hosted Access application** for the full app hostname above (all paths). Allow only your chosen teacher email addresses. Email one-time PIN or an identity provider such as Google can be used. Do not add a Bypass or Everyone policy.
+In Cloudflare Zero Trust, create a **self-hosted Access application** that protects two paths on the app hostname above: `/app` (the studio) and `/api` (its data). Add them as two public hostname entries with the same hostname, one with path `app` and one with path `api`. A path covers everything under it. Everything else, including the landing page at `/`, stays public. Allow only your chosen teacher email addresses. Email one-time PIN or an identity provider such as Google can be used. Do not add a Bypass or Everyone policy.
 
 Copy the application's **Application Audience (AUD)** tag and your **team domain**, such as `your-team.cloudflareaccess.com`. You can configure the hostname before the Worker is published. If you use a custom domain instead of `workers.dev`, use that hostname here.
 
@@ -88,7 +90,7 @@ Add these **repository variables**:
 
 Open **Actions → Check and deploy Bandwise → Run workflow** on `main`.
 
-The workflow installs dependencies, checks types, runs tests, builds, applies database migrations and deploys the Worker. It installs the encryption secret without printing it. The Worker URL appears in the deployment log. Visit that URL, sign in through Access, and connect your AI provider under **Settings → AI connection**.
+The workflow installs dependencies, checks types, runs tests, builds, applies database migrations and deploys the Worker. It installs the encryption secret without printing it. The Worker URL appears in the deployment log. Visit that URL, choose **Sign in** (or go to `/app`), sign in through Access, and connect your AI provider under **Settings → AI connection**.
 
 Until `CLOUDFLARE_DEPLOY_ENABLED` is `true`, GitHub runs checks but skips deployment. After setup, pushes to `main` deploy automatically. Pull requests run checks only and never receive deployment credentials.
 
@@ -137,7 +139,8 @@ For deployment from your computer, supply the same Cloudflare settings as enviro
 
 ## Editing and maintenance
 
-- Main interface: `app/page.tsx` and `app/globals.css`.
+- Public landing page: `app/page.tsx` (its contact email is `CONTACT_EMAIL` at the top of the file).
+- Main interface (the studio at `/app`): `app/app/page.tsx` and `app/globals.css`.
 - Task definitions, criteria and the Reading/Listening band conversion tables: `lib/ielts.ts`.
 - AI requests: `lib/assessment-ai.ts` and `lib/provider-adapters.ts`.
 - Qwen PDF conversion: `lib/render-pdf.client.ts`. PDF.js assets are copied locally during build; no conversion service receives your files.
