@@ -63,9 +63,9 @@ export function isAdminEmail(email:string){
   return inEmailList(env.ADMIN_EMAILS,email);
 }
 
-export type WorkspaceRow={id:string;status:WorkspaceStatus;created_at:string;approved_at:string|null;email:string|null;name:string|null;students:number};
+export type WorkspaceRow={id:string;status:WorkspaceStatus;created_at:string;approved_at:string|null;email:string|null;name:string|null;students:number;ai_credit_limit:number|null};
 export async function listWorkspaces():Promise<WorkspaceRow[]>{
-  const rows=await database().prepare(`SELECT w.id,w.status,w.created_at,w.approved_at,COALESCE(u.email,(SELECT a.email FROM access_identities a WHERE a.workspace_id = w.id ORDER BY a.last_seen DESC LIMIT 1)) AS email,u.name,(SELECT COUNT(*) FROM students s WHERE s.owner = w.id) AS students
+  const rows=await database().prepare(`SELECT w.id,w.status,w.created_at,w.approved_at,w.ai_credit_limit,COALESCE(u.email,(SELECT a.email FROM access_identities a WHERE a.workspace_id = w.id ORDER BY a.last_seen DESC LIMIT 1)) AS email,u.name,(SELECT COUNT(*) FROM students s WHERE s.owner = w.id) AS students
     FROM workspaces w LEFT JOIN memberships m ON m.workspace_id = w.id LEFT JOIN auth_user u ON u.id = m.user_id
     ORDER BY CASE w.status WHEN 'pending' THEN 0 WHEN 'active' THEN 1 ELSE 2 END, w.created_at DESC LIMIT 500`).all<WorkspaceRow>();
   return rows.results;

@@ -8,6 +8,7 @@ export type WorkspaceUsage={
   saved:number;reviewed:number;         // assessments created this month, and how many have the teacher's marks
   writingCost:number;speakingCost:number; // the cost of those assessments, transcription and retries included
   cost:number;platformCost:number;unpriced:number;requests:number;
+  platformCredits:number;creditLimit:number;customLimit:boolean; // Bandwise AI allowance (lib/ai-credits.ts)
 };
 export type ModelUsage={skill:'Writing'|'Speaking';provider:string;model:string;platform:number;assessments:number;cost:number;unpriced:number;inputTokens:number;audioTokens:number;outputTokens:number};
 

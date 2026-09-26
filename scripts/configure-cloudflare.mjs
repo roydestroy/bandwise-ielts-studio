@@ -15,7 +15,7 @@ if(/^[0-9a-f]{32}$/.test(process.env.CLOUDFLARE_ACCOUNT_ID||''))Object.assign(co
 const mode=process.env.PLATFORM_AI_MODE||'test';
 if(!['test','live'].includes(mode))throw new Error('PLATFORM_AI_MODE must be test or live.');
 config.vars.PLATFORM_AI_MODE=mode;
-for(const name of ['PLATFORM_AI_TEST_USERS','PLATFORM_GEMINI_MODEL'])if(process.env[name])config.vars[name]=process.env[name].trim();
+for(const name of ['PLATFORM_AI_TEST_USERS','PLATFORM_GEMINI_MODEL','PLATFORM_MONTHLY_CREDITS'])if(process.env[name])config.vars[name]=process.env[name].trim();
 // Bandwise sign-in (lib/auth.ts, docs/SIGN_IN_SETUP.md). Secrets are installed by scripts/deploy.mjs.
 const site=process.env.BETTER_AUTH_URL||(config.routes?.[0]?.custom_domain?'https://'+config.routes[0].pattern:'');
 if(site)config.vars.BETTER_AUTH_URL=site.replace(/\/$/,'');
@@ -27,7 +27,7 @@ if(process.env.EMAIL_FROM)config.send_email=[{name:'EMAIL'}];else delete config.
 // Say which optional settings reached this deploy (names only, never values), so a setting saved in the
 // wrong place shows up here instead of as a missing feature on the site.
 const has=name=>process.env[name]?'set':'missing';
-console.log('Optional settings: '+['BETTER_AUTH_SECRET','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ADMIN_EMAILS','EMAIL_FROM','PLATFORM_GEMINI_API_KEY','PLATFORM_AI_TEST_USERS'].map(n=>n+' '+has(n)).join(', '));
+console.log('Optional settings: '+['BETTER_AUTH_SECRET','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ADMIN_EMAILS','EMAIL_FROM','PLATFORM_GEMINI_API_KEY','PLATFORM_AI_TEST_USERS','PLATFORM_MONTHLY_CREDITS'].map(n=>n+' '+has(n)).join(', '));
 if(!!process.env.GOOGLE_CLIENT_ID!==!!process.env.GOOGLE_CLIENT_SECRET)console.warn('Warning: Google sign-in needs both GOOGLE_CLIENT_ID (a variable) and GOOGLE_CLIENT_SECRET (a secret). It stays off until both are set.');
 writeFileSync('wrangler.json',JSON.stringify(config,null,2)+'\n');
 console.log('Cloudflare resource bindings configured. No secrets were written to the config.');
