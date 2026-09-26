@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check} from 'lucide-react';
+import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check,Printer,Target,ListChecks,Quote} from 'lucide-react';
 
 // The public landing page. The studio itself lives at /app, behind sign-in.
 const CONTACT_EMAIL='panagoulix@gmail.com';
@@ -7,19 +7,32 @@ const accessLink='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('Bandwis
 
 export const metadata:Metadata={
   title:'Bandwise | IELTS marking support for teachers',
-  description:'Rubric-based band estimates for IELTS Writing and Speaking, instant Reading and Listening bands, and progress reports. The teacher reviews and confirms every score.',
+  description:'Criterion-by-criterion feedback for IELTS Writing and Speaking, with next steps for every student, printable practice reports and emailed progress reports. The teacher reviews and confirms every score.',
 };
 
 const features=[
-  {icon:FileText,tone:'writing',title:'Writing',text:'Upload a photo or PDF of a handwritten essay. You check the transcription, then get an estimate for each of the four official criteria, with the evidence behind it.'},
-  {icon:Mic,tone:'speaking',title:'Speaking',text:'Record the test in the browser or upload a recording. It is assessed from the audio itself, so pronunciation is judged on what the student actually said.'},
+  {icon:FileText,tone:'writing',title:'Writing',text:'Upload a photo or PDF of a handwritten essay. You check the transcription, then get a band and written feedback for each of the four official criteria, with a next step for each.'},
+  {icon:Mic,tone:'speaking',title:'Speaking',text:'Record the test in the browser or upload a recording. It is assessed from the audio itself, so feedback on pronunciation is based on what the student actually said.'},
   {icon:Headphones,tone:'listening',title:'Reading & Listening',text:'Enter the raw score out of 40 and the band appears at once, with separate Academic and General Training Reading tables.'},
   {icon:ChartNoAxesCombined,tone:'progress',title:'Progress tracking',text:'Each student’s history per skill, their latest criterion profile, and a flag when practice falls below their university’s minimum band.'},
-  {icon:Mail,tone:'reports',title:'Reports',text:'Printable practice reports and emailed progress reports, sent from your own mailbox. Only work you have reviewed is included.'},
+  {icon:Mail,tone:'reports',title:'Reports for students',text:'A printable report for every piece of work, and progress reports emailed from your own address. Only work you have reviewed is included.'},
   {icon:BookOpen,tone:'rubric',title:'Official descriptors',text:'Assessments are made against the published IELTS band descriptors, and the full-test band calculator combines results the way the real test does.'},
 ];
 
 const criteria=[['Task Response',6.5],['Coherence & Cohesion',6],['Lexical Resource',7],['Grammatical Range & Accuracy',6]] as const;
+
+// What a student receives, drawn from the fields every assessment produces (summary, per-criterion evidence
+// and next step, strengths, priorities) and from the emailed progress report. The content is a sample.
+const feedbackParts=[
+  {icon:ListChecks,title:'A band for each criterion',text:'The four official criteria, each with its own band: from Task Response and Coherence and Cohesion in writing to Fluency and Pronunciation in speaking.'},
+  {icon:Quote,title:'Evidence from their own work',text:'Each band is explained with short quotes from the essay or recording, so students can see exactly what earned it.'},
+  {icon:Target,title:'A next step for every criterion',text:'Concrete advice on what to change next time. You also get their main strengths and top priorities, ready to talk through in class.'},
+];
+const reportCriteria=[
+  {name:'Task Response',band:'6.5',evidence:'A clear position is stated (“I partly agree”) and kept throughout, but the second main idea is listed rather than developed.',next:'Support each main idea with a specific example or a result, not only a statement.'},
+  {name:'Lexical Resource',band:'7.0',evidence:'Good range for the topic (“congestion charge”, “public transport network”), with occasional repetition of “cars”.',next:'Vary how you refer to the key subject: “private vehicles”, “drivers”, “car owners”.'},
+];
+const progress=[['Test 1','5.5'],['Test 2','6.0'],['Test 3','6.5']] as const;
 
 const faqs=[
   ['Is this an official IELTS score?','No. Bandwise gives a practice estimate to support your own judgement. You review, adjust and confirm every score before a student sees it.'],
@@ -33,6 +46,7 @@ export default function Landing(){
     <header className="lp-header">
       <a href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></a>
       <nav aria-label="Main">
+        <a href="#feedback">Feedback</a>
         <a href="#features">Features</a>
         <a href="#how">How it works</a>
         <a href="#faq">FAQ</a>
@@ -44,19 +58,19 @@ export default function Landing(){
       <section className="lp-hero">
         <div className="lp-hero-text">
           <p className="eyebrow">FOR IELTS TEACHERS</p>
-          <h1>Mark IELTS practice faster, without handing over your judgement.</h1>
-          <p className="lp-lead">Bandwise gives you a first-pass band estimate for Writing and Speaking, scored on the four official criteria. You spend your time on feedback. Every score is yours to review and confirm.</p>
+          <h1>Detailed IELTS feedback for every student, in a fraction of the marking time.</h1>
+          <p className="lp-lead">Bandwise drafts band estimates and written feedback for Writing and Speaking, criterion by criterion, with a clear next step for each. You review and adjust it, then give students a report they can act on and a progress record they can see improving.</p>
           <div className="lp-actions">
             <a className="primary" href={accessLink}>Request early access <ArrowRight size={17}/></a>
             <a className="secondary" href="/app">Sign in</a>
           </div>
           <ul className="lp-points">
-            <li><Check size={16}/> All four skills in one place</li>
-            <li><Check size={16}/> Handwritten essays and live recordings</li>
-            <li><Check size={16}/> Teacher review built in</li>
+            <li><Check size={16}/> Feedback and next steps for each criterion</li>
+            <li><Check size={16}/> Printable and emailed student reports</li>
+            <li><Check size={16}/> You review every score</li>
           </ul>
         </div>
-        <div className="lp-mock" aria-label="Example of a Writing Task 2 estimate" role="img">
+        <div className="lp-mock" aria-label="Example of a Writing Task 2 estimate with feedback" role="img">
           <div className="lp-mock-head">
             <div><small>WRITING TASK 2 · ACADEMIC</small><strong>Cities and car ownership</strong></div>
             <span className="status">Needs review</span>
@@ -67,7 +81,49 @@ export default function Landing(){
             <div className="bar-track"><div style={{width:(band/9*100)+'%'}}/></div>
             <b>{band.toFixed(1)}</b>
           </div>)}
+          <div className="lp-mock-feedback">
+            <p><b>Strength</b> A clear position, kept from the introduction to the conclusion.</p>
+            <p><b>Next step</b> Support each main idea with a specific example or a result.</p>
+          </div>
           <p className="lp-mock-note"><UserCheck size={15}/> Teacher confirms before it counts</p>
+        </div>
+      </section>
+
+      <section id="feedback" className="lp-section">
+        <div className="lp-section-head">
+          <p className="eyebrow">WHAT YOUR STUDENTS GET</p>
+          <h2>Feedback students can act on, not just a number</h2>
+          <p className="lp-section-lead">Every assessment turns into written feedback you can check, edit and hand over. Nothing reaches a student until you have reviewed it.</p>
+        </div>
+        <div className="lp-parts">
+          {feedbackParts.map(f=><div className="lp-part" key={f.title}><span className="icon-box"><f.icon size={20}/></span><div><h3>{f.title}</h3><p>{f.text}</p></div></div>)}
+        </div>
+        <div className="lp-deliverables">
+          <figure className="lp-doc" aria-label="Sample printable practice report">
+            <figcaption><Printer size={16}/> Practice report · print or save as PDF</figcaption>
+            <div className="lp-paper">
+              <small>BANDWISE · IELTS PRACTICE REPORT</small>
+              <h3>Maria K. · Writing Task 2 · Cities and car ownership</h3>
+              <p className="lp-paper-band">Practice estimate: <b>6.5 / 9</b></p>
+              <p>A clear, relevant answer with a consistent position. Ideas need fuller development, and a few complex sentences lose control.</p>
+              {reportCriteria.map(c=><div className="lp-paper-crit" key={c.name}>
+                <h4>{c.name}: {c.band}</h4>
+                <p>{c.evidence}</p>
+                <p><b>Next step:</b> {c.next}</p>
+              </div>)}
+              <p className="lp-paper-more">+ Coherence and Cohesion, Grammatical Range and Accuracy, and your notes</p>
+            </div>
+          </figure>
+          <figure className="lp-doc" aria-label="Sample emailed progress report">
+            <figcaption><Mail size={16}/> Progress report · emailed from your address</figcaption>
+            <div className="lp-paper lp-email">
+              <p className="lp-email-meta"><b>Your IELTS progress report — Maria K.</b><br/>From: your own mailbox</p>
+              <p className="lp-email-note">“Great progress this month, Maria. Let’s focus on developing your examples before the mock test.”</p>
+              <h4>Overall band by practice test</h4>
+              {progress.map(([test,band])=><div className="lp-crit" key={test}><span>{test}</span><div className="bar-track"><div style={{width:(Number(band)/9*100)+'%'}}/></div><b>{band}</b></div>)}
+              <p className="lp-paper-more">+ latest band in each skill, progress in each skill over time, all against their target band</p>
+            </div>
+          </figure>
         </div>
       </section>
 
@@ -93,7 +149,7 @@ export default function Landing(){
         <ol className="lp-steps">
           <li><b>1</b><div><strong>Add your students</strong><p>Name, test type, target band and, if they have one, their university’s minimum.</p></div></li>
           <li><b>2</b><div><strong>Upload or record</strong><p>A photo or PDF of an essay, a speaking recording, or a Reading or Listening raw score.</p></div></li>
-          <li><b>3</b><div><strong>Review and send</strong><p>Check the estimate against the descriptors, adjust any criterion, add your notes, and share a report.</p></div></li>
+          <li><b>3</b><div><strong>Review and share</strong><p>Check the bands and feedback, edit anything you disagree with, add your own notes, then print the report or email the student their progress.</p></div></li>
         </ol>
       </section>
 
