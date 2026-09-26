@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import {FileText,Mic,Headphones,BookOpen,ChartNoAxesCombined,Mail,ShieldCheck,UserCheck,ArrowRight,Check,Printer,Target,ListChecks,Quote,Palette} from 'lucide-react';
 import {CONTACT_EMAIL} from '@/lib/legal';
+import BrandMark from '@/app/brand-mark';
 
 // The public landing page. The studio itself lives at /app, behind sign-in.
 const accessLink='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('Bandwise early access')+'&body='+encodeURIComponent('Hi, I would like to try Bandwise.\n\nI teach IELTS as: (private tutor / school / other)\nRoughly how many students: \n');
@@ -36,7 +37,7 @@ const progress=[['Test 1','5.5'],['Test 2','6.0'],['Test 3','6.5']] as const;
 // A made-up teacher brand for the samples, in a colour unlike Bandwise's to show it is theirs.
 const sampleBrand={name:'Northside English',contact:'northside-english.example',color:'#7a2e5c'};
 // A sample logo: a north-pointing compass needle in a rounded tile, beside a two-line wordmark.
-const BrandMark=()=><div className="lp-brandmark">
+const SampleBrandMark=()=><div className="lp-brandmark">
   <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
     <rect width="40" height="40" rx="11" fill="#6f2853"/>
     <circle cx="20" cy="20" r="13" fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth="1.4"/>
@@ -58,7 +59,7 @@ const faqs=[
 export default function Landing(){
   return <div className="lp">
     <header className="lp-header">
-      <a href="/" className="brand lp-brand" aria-label="Bandwise home"><span className="brandmark">b</span>bandwise<span className="brandperiod">.</span></a>
+      <a href="/" className="brand lp-brand" aria-label="Bandwise home"><BrandMark/>bandwise<span className="brandperiod">.</span></a>
       <nav aria-label="Main">
         <a href="#feedback">Feedback</a>
         <a href="#features">Features</a>
@@ -116,7 +117,7 @@ export default function Landing(){
           <figure className="lp-doc" aria-label="Sample printable practice report">
             <figcaption><Printer size={16}/> Practice report · print or save as PDF</figcaption>
             <div className="lp-paper lp-branded" style={{borderTop:'4px solid '+sampleBrand.color}}>
-              <BrandMark/>
+              <SampleBrandMark/>
               <small>IELTS PRACTICE REPORT</small>
               <h3>Maria K. · Writing Task 2 · Cities and car ownership</h3>
               <p className="lp-paper-band">Practice estimate: <b>6.5 / 9</b></p>
@@ -134,7 +135,7 @@ export default function Landing(){
             <figcaption><Mail size={16}/> Progress report · emailed from your address</figcaption>
             <div className="lp-paper lp-email" style={{borderTop:'4px solid '+sampleBrand.color}}>
               <p className="lp-email-meta"><b>Your IELTS progress report — Maria K.</b><br/>From: your own mailbox</p>
-              <BrandMark/>
+              <SampleBrandMark/>
               <p className="lp-email-note">“Great progress this month, Maria. Let’s focus on developing your examples before the mock test.”</p>
               <h4>Overall band by practice test</h4>
               {progress.map(([test,band])=><div className="lp-crit" key={test}><span>{test}</span><div className="bar-track"><div style={{width:(Number(band)/9*100)+'%'}}/></div><b>{band}</b></div>)}
