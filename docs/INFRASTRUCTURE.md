@@ -86,6 +86,8 @@ Expected by the code but **not set**:
 
 `PROVIDER_ENCRYPTION_KEY` is the only secret on the Worker.
 
+**Bandwise AI (from the platform-AI release):** `PLATFORM_GEMINI_API_KEY` (GitHub secret → Worker secret) is a **free-tier** Gemini key, added 2026-09-26. `PLATFORM_AI_MODE` (default `test`) and `PLATFORM_AI_TEST_USERS` (the tester emails; GitHub variable, not recorded here) control who sees it. See README step 6. Before `live`, the key must come from a billing-enabled Google project.
+
 ### D1
 
 | Item | Value |
@@ -242,3 +244,4 @@ npx wrangler r2 bucket list
 - 2026-09-26 — First version, written from the repository. Live account not yet inspected.
 - 2026-09-26 — Landing-page release (on this branch, not yet deployed): `/` is a public landing page and the studio moved to `/app`. Added the path table and the Access change it needs.
 - 2026-09-26 — Metering release: migration `0004_stiff_doctor_spectrum` adds `usage_events` (one row per AI call, with tokens and estimated cost). The deploy workflow applies it automatically.
+- 2026-09-26 — Platform-AI release: migration `0005` adds `usage_events.platform`. The deploy now passes `PLATFORM_GEMINI_API_KEY` (secret) and `PLATFORM_AI_MODE` / `PLATFORM_AI_TEST_USERS` / `PLATFORM_GEMINI_MODEL` (vars) to the Worker.

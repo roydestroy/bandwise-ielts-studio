@@ -67,7 +67,7 @@ Output tokens are about 80% of the cost. Capping the model's reasoning budget ("
          AVG(input_tokens + audio_tokens) AS avg_in, AVG(output_tokens) AS avg_out
   FROM usage_events WHERE assessment_id IS NOT NULL AND action IN ('transcribe','assess') GROUP BY skill, model;
   ```
-- [ ] **Add a platform connection.** Extend the existing `OPENAI_API_KEY` fallback in `lib/provider-store.ts` into a proper `source:'platform'` connection: Worker secrets `PLATFORM_GEMINI_API_KEY` (and `PLATFORM_OPENAI_API_KEY` as the fallback) plus the model IDs as vars. On hosted plans, `selectedConnections()` returns the platform connection and skips the provider picker.
+- [x] **Add a platform connection** (built 2026-09-26, test mode). "Bandwise AI" is a provider choice backed by `PLATFORM_GEMINI_API_KEY` (`lib/platform-ai.ts`). In `test` mode only `PLATFORM_AI_TEST_USERS` see it, with a warning to use sample work only, because the key is free-tier. `live` offers it to everyone. Usage rows carry `platform=1`. Still to do: an OpenAI fallback (`PLATFORM_OPENAI_API_KEY`); hiding the provider picker on hosted plans; and a paid key before `live`.
 - [ ] **Simplify Settings.** For hosted-plan users, replace "Settings → AI connection" with an "AI usage" panel showing credits left and the reset date. Show the provider forms only on the BYOK plan.
 - [ ] **Limit spend.** Set a per-request `maxOutputTokens` and thinking budget, and a monthly budget alert in Google Cloud and AI Gateway.
 
@@ -198,7 +198,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | --- | --- | --- |
 | **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction before launch, if selling to schools (deferred). Register the business, apply for Stripe Managed Payments. Choose plan prices. |
 | **1. Public landing page** | `/` is public, the studio is at `/app` | ~~Landing page, studio moved to `/app`~~ (built 2026-09-26; "Request early access" is an email link for now). Still to do: deploy, narrow the Access paths to `/app` + `/api`, turn on Web Analytics for the hostname, pricing and legal pages. |
-| **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | ~~`usage_events` and the AI usage page~~ (built 2026-09-26). Still to do: platform Gemini key via AI Gateway, OpenAI fallback, the accuracy test against teacher marks. |
+| **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | ~~`usage_events` and the AI usage page~~ (built 2026-09-26). ~~Platform Gemini key~~ (test mode, free key, 2026-09-26). Still to do: AI Gateway, OpenAI fallback, paid key before going live, the accuracy test against teacher marks. |
 | **3. Self-service accounts** | Anyone can sign up and get a free trial | Better Auth, workspaces, migration of existing teachers, Turnstile, transactional email, staging environment. |
 | **4. Billing** | Users can pay and credits are enforced | Stripe Checkout, portal, webhooks, credit ledger, 402 upgrade dialog, billing page. |
 | **5. Launch hardening** | Ready to advertise | Legal pages, account export and deletion, rate limits, monitoring and alerts, onboarding (sample student and essay), status and support email. |
@@ -211,6 +211,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | 2026-09-26 | Live account checked | Workers Paid is already on but cancels 2026-10-01; D1/R2 are in `EEUR` without EU jurisdiction; only 6 teacher-marked assessments exist. Plan updated in §1, §5 and the roadmap. See `INFRASTRUCTURE.md`. |
 | 2026-09-26 | EU move deferred; landing page built | EU jurisdiction only adds a storage guarantee (useful for schools); it doesn't change speed, cost or legality, and AI providers may still process outside the EU. Revisit before launch. Landing page uses an email link for early access instead of a form, to avoid a public write endpoint before Turnstile exists. |
 | 2026-09-26 | Metering before hosted AI | Usage is recorded while teachers still use their own keys, so plan prices can be set from real costs before Bandwise pays for AI itself. Costs are estimated at write time from list prices; tokens are kept so costs can be recalculated if prices change. |
+| 2026-09-26 | Free Gemini key until launch | No AI spend before launch. The free tier lets Google use requests to improve its products, so Bandwise AI stays in test mode (named testers, sample work only) until a paid key replaces it. Teachers keep using their own keys meanwhile. |
 
 ## Sources (checked 2026-09-26)
 

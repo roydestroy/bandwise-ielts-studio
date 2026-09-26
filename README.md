@@ -108,7 +108,20 @@ Cloudflare Access still protects the app. The links go only to the teacher's sel
 2. Add the token's **Access Key ID** and **Secret Access Key** as GitHub repository secrets `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`.
 3. Run the deploy workflow again. It installs both as Worker secrets. Without them, the app keeps sending file contents directly.
 
-### 6. Optional: email progress reports
+### 6. Optional: Bandwise AI (assess without a teacher's own key)
+
+"Bandwise AI" runs assessments on a Gemini key that belongs to the site rather than to each teacher. Once configured, it appears as an extra choice in **Settings → AI connection**. Usage on it is marked as Bandwise AI under **Settings → AI usage**.
+
+| GitHub setting | Kind | Value |
+| --- | --- | --- |
+| `PLATFORM_GEMINI_API_KEY` | Secret | A Gemini API key from Google AI Studio. Without it, Bandwise AI is hidden from everyone. |
+| `PLATFORM_AI_MODE` | Variable | `test` (default) or `live`. |
+| `PLATFORM_AI_TEST_USERS` | Variable | In test mode, the comma-separated sign-in emails that may use it. Nobody else sees it. |
+| `PLATFORM_GEMINI_MODEL` | Variable | Optional model ID; defaults to `gemini-2.5-flash`. |
+
+**Test mode is for sample work only.** On Google's free tier, Google may use what you send to improve its products. The settings page warns testers about this. Before switching to `live`, which offers it to every teacher, replace the key with one from a billing-enabled (paid) Google project. Paid-tier content is not used that way. Then run the deploy workflow again.
+
+### 7. Optional: email progress reports
 
 No deployment setting is needed. Each teacher opens **Settings → Email** in the app and connects their own mailbox using its outgoing (SMTP) server, the sending half of the IMAP/SMTP settings an email app uses. Presets are included for Gmail, Outlook, iCloud, Yahoo and Zoho. Most providers require an app password rather than the normal sign-in password. The password is encrypted with the same `PROVIDER_ENCRYPTION_KEY` as AI keys.
 
