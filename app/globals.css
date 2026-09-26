@@ -62,3 +62,4 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:16px;background:var(--bac
 .accuracy-stats{grid-template-columns:repeat(2,1fr)}.accuracy-verdict{font-size:13px;margin-top:12px!important;color:#5e6f68}.accuracy-verdict.good{color:#1f6a45;font-weight:600}.accuracy-verdict.bad{color:#b4532a;font-weight:600}@media(max-width:600px){.accuracy-stats{grid-template-columns:1fr}}
 .feedback-intro{font-size:14px;margin:6px 0 16px}.money-field{display:flex;align-items:center;gap:8px;margin-top:6px}.money-field input{max-width:120px}.money-field .muted{font-size:13px;font-weight:400}.feedback-prompt{align-items:center;margin-bottom:24px}.feedback-prompt>div{flex:1}.feedback-prompt>svg{flex-shrink:0;color:#145e50}.feedback-prompt .icon-button{padding:4px;text-decoration:none}
 .empty-actions{justify-content:center}
+.lp-note{font-size:13px;color:#6b7d72;margin:-12px 0 22px!important}
