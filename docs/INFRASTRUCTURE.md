@@ -113,7 +113,7 @@ Both: storage class Standard, no bucket locks, no Sippy migration. Event notific
 | Item | Value |
 | --- | --- |
 | Team domain | `bandwise.cloudflareaccess.com` (the org was first created as a random `*.cloudflareaccess.com` name, then renamed) |
-| Applications | **1**: `bandwise`, self-hosted, public destination `bandwise.eurognosi-remote.com` (the **whole hostname, all paths**). Visible in the App Launcher. CORS preflight bypass off. |
+| Applications | **1**: `bandwise`, self-hosted, public destination `bandwise.eurognosi-remote.com` (the **whole hostname, all paths**). **To change** once the landing-page release is deployed: protect only paths `app` and `api` (see [Public landing page](#public-landing-page)). Visible in the App Launcher. CORS preflight bypass off. |
 | Policy | One reusable policy **"Teachers"**: Allow, include = 4 individual email rules. No groups, no exclude/require rules. |
 | Login methods | All configured IdPs are allowed (no restriction on the app): **One-time PIN** and **Cloudflare** (sign in with a Cloudflare account). No Google or other social IdP. Not auto-redirected. |
 | Session length | 24 h (application session) |
@@ -121,6 +121,18 @@ Both: storage class Standard, no bucket locks, no Sippy migration. Event notific
 | Other | `deny_unmatched_requests` off; no device enrollment, no Gateway policies in use. |
 
 A request without a session is redirected (302) to the Access login page, confirmed from outside.
+
+### Public landing page
+
+Since the landing-page release, the Worker serves:
+
+| Path | Who | What |
+| --- | --- | --- |
+| `/` | Everyone | Landing page (`app/page.tsx`), server-rendered |
+| `/app` | Teachers, through Access | The studio (`app/app/page.tsx`), marked `noindex` |
+| `/api/*` | Teachers, through Access | Studio data. Every route also checks the Access JWT itself, so a gap in the Access paths returns 401, not data. |
+
+The Access app must cover `/app` **and** `/api`. Access adds the signed identity header only on protected paths, so if `/api` is left out the studio loads but cannot read any data. Order of changes: deploy the release first (until then `/app` doesn't exist), then edit the Access app's destinations.
 
 ### Zone and DNS: `eurognosi-remote.com`
 
@@ -228,3 +240,4 @@ npx wrangler r2 bucket list
 
 - 2026-09-26 — Checked against the live account with a read-only API token. Replaced every "(verify)" with live values. Found: Workers Paid active but **cancelling 2026-10-01**; D1 and R2 in `EEUR` without EU jurisdiction; all 4 migrations applied; only `PROVIDER_ENCRYPTION_KEY` set (no R2 signed-link secrets, no platform OpenAI key); Access allows 4 emails via One-time PIN or Cloudflare login, 24 h sessions, whole hostname. Documented the resources the repo didn't know about (cleanup Worker and `class-files` bucket, 4 Pages projects, 6 tunnels, Web Analytics site) and added a risks section.
 - 2026-09-26 — First version, written from the repository. Live account not yet inspected.
+- 2026-09-26 — Landing-page release (on this branch, not yet deployed): `/` is a public landing page and the studio moved to `/app`. Added the path table and the Access change it needs.

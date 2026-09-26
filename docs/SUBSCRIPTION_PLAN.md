@@ -165,7 +165,7 @@ Changes:
 | **Turnstile** widget (none exist yet) | Bot protection on sign-up and login |
 | **Rate Limiting** binding in `wrangler.json` (no rate-limit rules exist on the zone either) | Per-workspace AI request limits |
 | **Staging environment**: a Worker `bandwise-staging` with its own D1/R2 and Stripe *test mode*, deployed from PRs or a `staging` branch | Billing and auth changes must never be tested on production data |
-| **EU data location**: the existing D1 database and R2 bucket are in `EEUR` (Eastern Europe) **without** an EU jurisdiction, i.e. a location hint, not a guarantee. Create D1 `bandwise` with jurisdiction `eu` and an R2 bucket with jurisdiction `eu`, and copy the data across **before launch**, while it is tiny (one teacher, ≈ 17 MB). The staging environment should use EU jurisdiction from the start. | GDPR, and schools will ask. Resources can't be moved in place, and the move only gets harder as data grows. |
+| **EU data location** (*deferred 2026-09-26: do it before launch if selling to schools*): the existing D1 database and R2 bucket are in `EEUR` (Eastern Europe) **without** an EU jurisdiction, i.e. a location hint, not a guarantee. Create D1 `bandwise` with jurisdiction `eu` and an R2 bucket with jurisdiction `eu`, and copy the data across **before launch**, while it is tiny (one teacher, ≈ 17 MB). The staging environment should use EU jurisdiction from the start. | GDPR, and schools will ask. Resources can't be moved in place, and the move only gets harder as data grows. |
 | **Cron Trigger** (daily) — Bandwise has none today (the only cron on the account belongs to the unrelated `classroom-files-cleanup` Worker) | Delete expired accounts, reconcile credits against Stripe, clean up orphaned files, export a D1 backup |
 | **Web Analytics** on the landing page (a site with automatic setup already exists for `eurognosi-remote.com`; add or confirm coverage for the Bandwise hostname) | Cookieless, so no cookie banner is needed for analytics |
 | **Zone hardening** on `eurognosi-remote.com`: Always Use HTTPS on (currently off), minimum TLS 1.2 (currently 1.0), SSL mode Full (strict) (currently Full) | Expected of a paid service; the zone is shared with other Eurognosi sites, so check those still work |
@@ -189,8 +189,8 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 
 | Phase | Outcome | Main work |
 | --- | --- | --- |
-| **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction. Register the business, apply for Stripe Managed Payments. Choose plan prices. |
-| **1. Public landing page** | `/` is public, the studio is at `/app` | Marketing pages, narrow the Access paths, waitlist form, Web Analytics. |
+| **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction before launch, if selling to schools (deferred). Register the business, apply for Stripe Managed Payments. Choose plan prices. |
+| **1. Public landing page** | `/` is public, the studio is at `/app` | ~~Landing page, studio moved to `/app`~~ (built 2026-09-26; "Request early access" is an email link for now). Still to do: deploy, narrow the Access paths to `/app` + `/api`, turn on Web Analytics for the hostname, pricing and legal pages. |
 | **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | `usage_events`, platform Gemini key via AI Gateway, OpenAI fallback, the accuracy test against teacher marks. |
 | **3. Self-service accounts** | Anyone can sign up and get a free trial | Better Auth, workspaces, migration of existing teachers, Turnstile, transactional email, staging environment. |
 | **4. Billing** | Users can pay and credits are enforced | Stripe Checkout, portal, webhooks, credit ledger, 402 upgrade dialog, billing page. |
@@ -202,6 +202,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | --- | --- | --- |
 | 2026-09-26 | Plan drafted | Nothing decided yet. The recommendations above are proposals. |
 | 2026-09-26 | Live account checked | Workers Paid is already on but cancels 2026-10-01; D1/R2 are in `EEUR` without EU jurisdiction; only 6 teacher-marked assessments exist. Plan updated in §1, §5 and the roadmap. See `INFRASTRUCTURE.md`. |
+| 2026-09-26 | EU move deferred; landing page built | EU jurisdiction only adds a storage guarantee (useful for schools); it doesn't change speed, cost or legality, and AI providers may still process outside the EU. Revisit before launch. Landing page uses an email link for early access instead of a form, to avoid a public write endpoint before Turnstile exists. |
 
 ## Sources (checked 2026-09-26)
 
