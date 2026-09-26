@@ -59,7 +59,14 @@ Output tokens are about 80% of the cost. Capping the model's reasoning budget ("
 
 ### Code changes
 
-- [ ] **Record token usage.** Have `generate()` in `lib/provider-adapters.ts` return each provider's `usage` block. Write one row per AI call to a new `usage_events` table (owner, assessment, provider, model, input/output/audio tokens, estimated cost). Do this first, while the app is still BYOK, to get real cost figures.
+- [x] **Record token usage** (built 2026-09-26). `generate()` in `lib/provider-adapters.ts` reads each provider's usage block (`lib/usage.ts`). The studio writes one row per AI call to `usage_events` (migration `0004`), with an estimated cost from a price table of verified list prices. Teachers see totals, and the **average cost per Writing and per Speaking assessment**, under **Settings → AI usage**. Requests on models with no verified price (Qwen, OpenAI audio input) keep their tokens but have no cost. To see figures across all teachers, run this on D1:
+
+  ```sql
+  SELECT CASE WHEN task LIKE 'Speaking%' THEN 'Speaking' ELSE 'Writing' END AS skill, model,
+         COUNT(DISTINCT assessment_id) AS assessments, SUM(cost_usd) / COUNT(DISTINCT assessment_id) AS usd_per_assessment,
+         AVG(input_tokens + audio_tokens) AS avg_in, AVG(output_tokens) AS avg_out
+  FROM usage_events WHERE assessment_id IS NOT NULL AND action IN ('transcribe','assess') GROUP BY skill, model;
+  ```
 - [ ] **Add a platform connection.** Extend the existing `OPENAI_API_KEY` fallback in `lib/provider-store.ts` into a proper `source:'platform'` connection: Worker secrets `PLATFORM_GEMINI_API_KEY` (and `PLATFORM_OPENAI_API_KEY` as the fallback) plus the model IDs as vars. On hosted plans, `selectedConnections()` returns the platform connection and skips the provider picker.
 - [ ] **Simplify Settings.** For hosted-plan users, replace "Settings → AI connection" with an "AI usage" panel showing credits left and the reset date. Show the provider forms only on the BYOK plan.
 - [ ] **Limit spend.** Set a per-request `maxOutputTokens` and thinking budget, and a monthly budget alert in Google Cloud and AI Gateway.
@@ -191,7 +198,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | --- | --- | --- |
 | **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction before launch, if selling to schools (deferred). Register the business, apply for Stripe Managed Payments. Choose plan prices. |
 | **1. Public landing page** | `/` is public, the studio is at `/app` | ~~Landing page, studio moved to `/app`~~ (built 2026-09-26; "Request early access" is an email link for now). Still to do: deploy, narrow the Access paths to `/app` + `/api`, turn on Web Analytics for the hostname, pricing and legal pages. |
-| **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | `usage_events`, platform Gemini key via AI Gateway, OpenAI fallback, the accuracy test against teacher marks. |
+| **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | ~~`usage_events` and the AI usage page~~ (built 2026-09-26). Still to do: platform Gemini key via AI Gateway, OpenAI fallback, the accuracy test against teacher marks. |
 | **3. Self-service accounts** | Anyone can sign up and get a free trial | Better Auth, workspaces, migration of existing teachers, Turnstile, transactional email, staging environment. |
 | **4. Billing** | Users can pay and credits are enforced | Stripe Checkout, portal, webhooks, credit ledger, 402 upgrade dialog, billing page. |
 | **5. Launch hardening** | Ready to advertise | Legal pages, account export and deletion, rate limits, monitoring and alerts, onboarding (sample student and essay), status and support email. |
@@ -203,6 +210,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | 2026-09-26 | Plan drafted | Nothing decided yet. The recommendations above are proposals. |
 | 2026-09-26 | Live account checked | Workers Paid is already on but cancels 2026-10-01; D1/R2 are in `EEUR` without EU jurisdiction; only 6 teacher-marked assessments exist. Plan updated in §1, §5 and the roadmap. See `INFRASTRUCTURE.md`. |
 | 2026-09-26 | EU move deferred; landing page built | EU jurisdiction only adds a storage guarantee (useful for schools); it doesn't change speed, cost or legality, and AI providers may still process outside the EU. Revisit before launch. Landing page uses an email link for early access instead of a form, to avoid a public write endpoint before Turnstile exists. |
+| 2026-09-26 | Metering before hosted AI | Usage is recorded while teachers still use their own keys, so plan prices can be set from real costs before Bandwise pays for AI itself. Costs are estimated at write time from list prices; tokens are kept so costs can be recalculated if prices change. |
 
 ## Sources (checked 2026-09-26)
 

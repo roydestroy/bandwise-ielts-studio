@@ -94,7 +94,7 @@ Expected by the code but **not set**:
 | Created | 2026-09-15 |
 | Region | `EEUR` (Eastern Europe), primary served from the MXP colo. No jurisdiction set. Read replication disabled. |
 | Size | 159,744 bytes (≈ 0.16 MB) |
-| Tables | `students`, `assessments`, `ai_connections`, `ai_preferences`, `email_settings`, plus `d1_migrations` and the internal `_cf_KV` / `sqlite_sequence` |
+| Tables | `students`, `assessments`, `ai_connections`, `ai_preferences`, `email_settings`, `usage_events` (from migration `0004`, once deployed), plus `d1_migrations` and the internal `_cf_KV` / `sqlite_sequence` |
 | Migrations applied | All four in `drizzle/`: `0000_swift_sway` and `0001_empty_korath` (2026-09-15 07:57), `0002_slim_blazing_skull` (2026-09-15 09:31), `0003_aberrant_havok` (2026-09-25 12:28). Nothing pending. |
 | Rows (2026-09-26) | students 1, assessments 10 (all Academic, all status "Reviewed"; 6 carry teacher marks), ai_connections 2 (Gemini, Qwen), ai_preferences 1, email_settings 1. **One** distinct `owner` across all tables. |
 | Time Travel | Active (bookmarks available). Retention is 30 days on Workers Paid, **7 days after the plan drops to Free**. No other backup or export exists. |
@@ -241,3 +241,4 @@ npx wrangler r2 bucket list
 - 2026-09-26 — Checked against the live account with a read-only API token. Replaced every "(verify)" with live values. Found: Workers Paid active but **cancelling 2026-10-01**; D1 and R2 in `EEUR` without EU jurisdiction; all 4 migrations applied; only `PROVIDER_ENCRYPTION_KEY` set (no R2 signed-link secrets, no platform OpenAI key); Access allows 4 emails via One-time PIN or Cloudflare login, 24 h sessions, whole hostname. Documented the resources the repo didn't know about (cleanup Worker and `class-files` bucket, 4 Pages projects, 6 tunnels, Web Analytics site) and added a risks section.
 - 2026-09-26 — First version, written from the repository. Live account not yet inspected.
 - 2026-09-26 — Landing-page release (on this branch, not yet deployed): `/` is a public landing page and the studio moved to `/app`. Added the path table and the Access change it needs.
+- 2026-09-26 — Metering release: migration `0004_stiff_doctor_spectrum` adds `usage_events` (one row per AI call, with tokens and estimated cost). The deploy workflow applies it automatically.
