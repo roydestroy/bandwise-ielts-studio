@@ -26,6 +26,7 @@ jobs:
     concurrency:
       group: bandwise-production
       cancel-in-progress: false
+    # Plain settings are read from repository Variables, or from Secrets if they were saved there instead.
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -40,12 +41,12 @@ jobs:
       CLOUDFLARE_WORKER_NAME: ${{ vars.CLOUDFLARE_WORKER_NAME }}
       ACCESS_TEAM_DOMAIN: ${{ vars.ACCESS_TEAM_DOMAIN }}
       ACCESS_AUD: ${{ vars.ACCESS_AUD }}
-      PLATFORM_AI_MODE: ${{ vars.PLATFORM_AI_MODE }}
-      PLATFORM_AI_TEST_USERS: ${{ vars.PLATFORM_AI_TEST_USERS }}
-      PLATFORM_GEMINI_MODEL: ${{ vars.PLATFORM_GEMINI_MODEL }}
-      GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-      ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS }}
-      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      PLATFORM_AI_MODE: ${{ vars.PLATFORM_AI_MODE || secrets.PLATFORM_AI_MODE }}
+      PLATFORM_AI_TEST_USERS: ${{ vars.PLATFORM_AI_TEST_USERS || secrets.PLATFORM_AI_TEST_USERS }}
+      PLATFORM_GEMINI_MODEL: ${{ vars.PLATFORM_GEMINI_MODEL || secrets.PLATFORM_GEMINI_MODEL }}
+      GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID || secrets.GOOGLE_CLIENT_ID }}
+      ADMIN_EMAILS: ${{ vars.ADMIN_EMAILS || secrets.ADMIN_EMAILS }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM || secrets.EMAIL_FROM }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
