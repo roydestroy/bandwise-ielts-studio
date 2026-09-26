@@ -33,7 +33,7 @@ export default function UsageSettings(){
       <section className="panel settings-panel">
         <h2>By model</h2>
         <Table><TableHeader><TableRow><TableHead>Model</TableHead><TableHead>Requests</TableHead><TableHead>Input</TableHead><TableHead>Audio</TableHead><TableHead>Output</TableHead><TableHead>Est. cost</TableHead></TableRow></TableHeader>
-          <TableBody>{data.models.map(m=><TableRow key={m.provider+m.model}><TableCell>{m.model}</TableCell><TableCell>{m.requests}</TableCell><TableCell>{tokens(m.inputTokens)}</TableCell><TableCell>{tokens(m.audioTokens)}</TableCell><TableCell>{tokens(m.outputTokens)}</TableCell><TableCell>{cost(m.cost,m.unpriced,m.requests)}</TableCell></TableRow>)}</TableBody></Table>
+          <TableBody>{data.models.map(m=><TableRow key={m.provider+m.model+m.platform}><TableCell>{m.model}{m.platform?<small className="muted"> · Bandwise AI</small>:null}</TableCell><TableCell>{m.requests}</TableCell><TableCell>{tokens(m.inputTokens)}</TableCell><TableCell>{tokens(m.audioTokens)}</TableCell><TableCell>{tokens(m.outputTokens)}</TableCell><TableCell>{cost(m.cost,m.unpriced,m.requests)}</TableCell></TableRow>)}</TableBody></Table>
       </section>
       <section className="panel settings-panel"><h2>About these numbers</h2><p>Token counts come from each AI provider’s own response. Costs are estimates from published list prices; your provider’s bill is the final word.{unpriced?' A dash or a “+” means some requests used a model whose price Bandwise doesn’t know yet, so they are counted in tokens but not in cost.':''} Recording started on {new Date(data.since!).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}.</p></section>
     </>}

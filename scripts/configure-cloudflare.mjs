@@ -11,5 +11,10 @@ config.r2_buckets[0].bucket_name=process.env.CLOUDFLARE_R2_BUCKET_NAME;
 config.vars={ACCESS_TEAM_DOMAIN:team,ACCESS_AUD:process.env.ACCESS_AUD};
 // Where signed R2 download links point. The R2 API keys themselves are Worker secrets (scripts/deploy.mjs).
 if(/^[0-9a-f]{32}$/.test(process.env.CLOUDFLARE_ACCOUNT_ID||''))Object.assign(config.vars,{R2_ACCOUNT_ID:process.env.CLOUDFLARE_ACCOUNT_ID,R2_BUCKET_NAME:process.env.CLOUDFLARE_R2_BUCKET_NAME});
+// Optional Bandwise AI settings (lib/platform-ai.ts). The key itself is a Worker secret (scripts/deploy.mjs).
+const mode=process.env.PLATFORM_AI_MODE||'test';
+if(!['test','live'].includes(mode))throw new Error('PLATFORM_AI_MODE must be test or live.');
+config.vars.PLATFORM_AI_MODE=mode;
+for(const name of ['PLATFORM_AI_TEST_USERS','PLATFORM_GEMINI_MODEL'])if(process.env[name])config.vars[name]=process.env[name].trim();
 writeFileSync('wrangler.json',JSON.stringify(config,null,2)+'\n');
 console.log('Cloudflare resource bindings configured. No secrets were written to the config.');

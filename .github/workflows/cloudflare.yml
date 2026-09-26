@@ -32,11 +32,15 @@ jobs:
       PROVIDER_ENCRYPTION_KEY: ${{ secrets.PROVIDER_ENCRYPTION_KEY }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      PLATFORM_GEMINI_API_KEY: ${{ secrets.PLATFORM_GEMINI_API_KEY }}
       CLOUDFLARE_D1_DATABASE_ID: ${{ vars.CLOUDFLARE_D1_DATABASE_ID }}
       CLOUDFLARE_R2_BUCKET_NAME: ${{ vars.CLOUDFLARE_R2_BUCKET_NAME }}
       CLOUDFLARE_WORKER_NAME: ${{ vars.CLOUDFLARE_WORKER_NAME }}
       ACCESS_TEAM_DOMAIN: ${{ vars.ACCESS_TEAM_DOMAIN }}
       ACCESS_AUD: ${{ vars.ACCESS_AUD }}
+      PLATFORM_AI_MODE: ${{ vars.PLATFORM_AI_MODE }}
+      PLATFORM_AI_TEST_USERS: ${{ vars.PLATFORM_AI_TEST_USERS }}
+      PLATFORM_GEMINI_MODEL: ${{ vars.PLATFORM_GEMINI_MODEL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

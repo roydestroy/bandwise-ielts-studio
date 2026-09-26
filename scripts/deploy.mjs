@@ -13,4 +13,5 @@ run([wrangler,'d1','migrations','apply','DB','--remote','--config','wrangler.jso
 run([wrangler,'deploy','--config','dist/server/wrangler.json']);
 run([wrangler,'secret','put','PROVIDER_ENCRYPTION_KEY','--config','wrangler.json'],key+'\n');
 // Optional: an R2 API token lets AI providers fetch files by signed link instead of the Worker encoding them.
-for(const name of ['R2_ACCESS_KEY_ID','R2_SECRET_ACCESS_KEY'])if(process.env[name])run([wrangler,'secret','put',name,'--config','wrangler.json'],process.env[name]+'\n');
+// Optional: Bandwise's own Gemini key for "Bandwise AI" (lib/platform-ai.ts).
+for(const name of ['R2_ACCESS_KEY_ID','R2_SECRET_ACCESS_KEY','PLATFORM_GEMINI_API_KEY'])if(process.env[name])run([wrangler,'secret','put',name,'--config','wrangler.json'],process.env[name]+'\n');

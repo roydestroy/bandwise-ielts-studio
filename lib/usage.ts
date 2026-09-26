@@ -3,7 +3,8 @@ import type {ProviderId} from './providers';
 // Token counts for one provider call, as reported by the provider. Audio input is counted apart from other
 // input because several providers price it differently. Output includes any reasoning ("thinking") tokens,
 // which are billed as output.
-export type Usage={provider:ProviderId;model:string;kind:'text'|'audio';inputTokens:number;audioTokens:number;outputTokens:number};
+// `platform` marks a call made on Bandwise's own key, which a plan will have to pay for.
+export type Usage={provider:ProviderId;model:string;kind:'text'|'audio';inputTokens:number;audioTokens:number;outputTokens:number;platform?:true};
 
 // The parts of each provider's usage block that are read here. Every field is optional: providers omit them.
 type OpenAIStyleUsage={input_tokens?:number;output_tokens?:number;prompt_tokens?:number;completion_tokens?:number;prompt_tokens_details?:{audio_tokens?:number}};
