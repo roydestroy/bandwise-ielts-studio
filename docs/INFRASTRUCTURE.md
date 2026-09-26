@@ -133,6 +133,8 @@ Since the landing-page release, the Worker serves:
 | `/` | Everyone | Landing page (`app/page.tsx`), server-rendered |
 | `/app` | Teachers, through Access | The studio (`app/app/page.tsx`), marked `noindex` |
 | `/api/*` | Teachers, through Access | Studio data. Every route also checks the Access JWT itself, so a gap in the Access paths returns 401, not data. |
+| `/login`, `/auth/*`, `/logout` | Everyone | Bandwise sign-in (Better Auth): the sign-in page, Google callback and email-code endpoints (rate-limited per network address, stored in D1), and POST-only sign-out. Off until `BETTER_AUTH_SECRET` is set. |
+| `/app/admin` | Admins (`ADMIN_EMAILS`) | Approve or pause accounts. |
 | `/brand/<id>` | Everyone | Teachers' report logos (PNG/JPEG from R2 `branding/<id>`), public so that emailed reports can show them. Random IDs, cached for a year, `nosniff` and `default-src 'none'`. |
 
 The Access app must cover `/app` **and** `/api`. Access adds the signed identity header only on protected paths, so if `/api` is left out the studio loads but cannot read any data. Order of changes: deploy the release first (until then `/app` doesn't exist), then edit the Access app's destinations.
@@ -248,3 +250,4 @@ npx wrangler r2 bucket list
 - 2026-09-26 — Platform-AI release: migration `0005` adds `usage_events.platform`. The deploy now passes `PLATFORM_GEMINI_API_KEY` (secret) and `PLATFORM_AI_MODE` / `PLATFORM_AI_TEST_USERS` / `PLATFORM_GEMINI_MODEL` (vars) to the Worker.
 - 2026-09-26 — Access narrowed to `/app` and `/api`. Checked from outside: `/` returns 200 with all its assets, while `/app`, `/api/studio` and `/api/usage` redirect to the Access login.
 - 2026-09-26 — Report-branding release: migration `0006` adds the `branding` table. Logos are stored in R2 under `branding/` and served publicly at `/brand/<id>`.
+- 2026-09-26 — Sign-in release (Phase 3): migration `0007` adds the `auth_*` tables, `workspaces`, `memberships` and `access_identities`, and seeds an approved workspace for every existing data owner. New settings: secrets `BETTER_AUTH_SECRET` and `GOOGLE_CLIENT_SECRET`, variables `GOOGLE_CLIENT_ID`, `ADMIN_EMAILS` and `EMAIL_FROM` (which also adds the `EMAIL` send_email binding). `BETTER_AUTH_URL` is derived from the custom domain. See `docs/SIGN_IN_SETUP.md`.

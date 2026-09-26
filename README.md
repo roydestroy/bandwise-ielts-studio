@@ -45,6 +45,8 @@ If the domain is already an active zone on the same Cloudflare account, you can 
 
 ### 2. Set up teacher sign-in
 
+> **Bandwise now has its own sign-in** (Continue with Google, or an emailed code, with admin approval of new accounts). Follow [`docs/SIGN_IN_SETUP.md`](docs/SIGN_IN_SETUP.md) to turn it on. The Cloudflare Access setup below keeps working until you switch, and is how existing teachers' data gets linked to their new sign-in.
+
 In Cloudflare Zero Trust, create a **self-hosted Access application** that protects two paths on the app hostname above: `/app` (the studio) and `/api` (its data). Add them as two public hostname entries with the same hostname, one with path `app` and one with path `api`. A path covers everything under it. Everything else, including the landing page at `/`, stays public. Allow only your chosen teacher email addresses. Email one-time PIN or an identity provider such as Google can be used. Do not add a Bypass or Everyone policy.
 
 Copy the application's **Application Audience (AUD)** tag and your **team domain**, such as `your-team.cloudflareaccess.com`. You can configure the hostname before the Worker is published. If you use a custom domain instead of `workers.dev`, use that hostname here.
@@ -165,7 +167,7 @@ For deployment from your computer, supply the same Cloudflare settings as enviro
 - Task definitions, criteria and the Reading/Listening band conversion tables: `lib/ielts.ts`.
 - AI requests: `lib/assessment-ai.ts` and `lib/provider-adapters.ts`.
 - Qwen PDF conversion: `lib/render-pdf.client.ts`. PDF.js assets are copied locally during build; no conversion service receives your files.
-- Authentication: `app/access-auth.ts` and `lib/access.ts`.
+- Authentication: `app/access-auth.ts` (who is signed in), `lib/auth.ts` (Google and email-code sign-in), `lib/workspaces.ts` (workspaces, approval, linking Access users), `lib/access.ts` (Cloudflare Access JWTs). Pages: `app/login/`, `app/app/admin/`.
 - Storage schema: `db/schema.ts`; committed migrations: `drizzle/`.
 - Cloudflare resources: `wrangler.json`; deployment: `.github/workflows/cloudflare.yml`.
 
