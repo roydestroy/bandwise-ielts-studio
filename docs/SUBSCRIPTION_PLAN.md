@@ -59,7 +59,7 @@ Output tokens are about 80% of the cost. Capping the model's reasoning budget ("
 
 ### Code changes
 
-- [x] **Record token usage** (built 2026-09-26). `generate()` in `lib/provider-adapters.ts` reads each provider's usage block (`lib/usage.ts`). The studio writes one row per AI call to `usage_events` (migration `0004`), with an estimated cost from a price table of verified list prices. Teachers see totals, and the **average cost per Writing and per Speaking assessment**, under **Settings → AI usage**. Requests on models with no verified price (Qwen, OpenAI audio input) keep their tokens but have no cost. To see figures across all teachers, run this on D1:
+- [x] **Record token usage** (built 2026-09-26). `generate()` in `lib/provider-adapters.ts` reads each provider's usage block (`lib/usage.ts`). The studio writes one row per AI call to `usage_events` (migration `0004`), with an estimated cost from a price table of verified list prices. Teachers see totals, and the **average cost per Writing and per Speaking assessment**, under **Settings → AI usage**. Requests on models with no verified price (Qwen, OpenAI audio input) keep their tokens but have no cost. Admins see every teacher's month under **Admin → Usage and pricing** (`/app/admin`, `lib/pilot-stats.ts`): active teachers, credits used by a typical teacher (median) and a heavy one (80th percentile), cost per writing and per speaking assessment, how many teachers fit each draft plan, and cost per model. The admin's own workspace is left out by default so sample runs don't skew it. The same figures straight from D1:
 
   ```sql
   SELECT CASE WHEN task LIKE 'Speaking%' THEN 'Speaking' ELSE 'Writing' END AS skill, model,
@@ -104,7 +104,7 @@ EU prices shown to consumers include VAT. A merchant of record (see below) handl
 | **Own key** | €7/mo | Unlimited, using the teacher's own AI key (today's behaviour) | €0 | Technical users |
 | Top-up | €9 | +100 credits, valid 12 months | ≈ €6 | Anyone who runs out |
 
-"Worst case" means a user spends every credit on the most expensive job, at 2027 Gemini Flash prices. Real users typically use 30–50% of their allowance. Revisit these numbers after the first month of `usage_events` data.
+"Worst case" means a user spends every credit on the most expensive job, at 2027 Gemini Flash prices. Real users typically use 30–50% of their allowance. Revisit these numbers after the first month of `usage_events` data, using **Admin → Usage and pricing**. The credit rule and plan allowances it checks against live in `lib/pilot-stats.ts`; change them there when the plans change.
 
 ### Payments provider
 

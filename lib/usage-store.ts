@@ -1,5 +1,6 @@
 import {database} from './storage';
 import {estimateCost,type Usage} from './usage';
+import type {ModelUsage} from './pilot-stats';
 
 export type UsageAction='transcribe'|'assess'|'test';
 type Totals={requests:number;inputTokens:number;audioTokens:number;outputTokens:number;cost:number;unpriced:number};
@@ -29,4 +30,33 @@ export async function usageSummary(owner:string):Promise<UsageSummary>{
     db.prepare(`SELECT provider,model,platform,${totals} FROM usage_events WHERE owner = ? GROUP BY provider,model,platform ORDER BY requests DESC`).bind(owner),
   ]);
   return {since:(first.results[0] as {since:string|null}|undefined)?.since??null,months:months.results as UsageSummary['months'],skills:skills.results as UsageSummary['skills'],models:models.results as UsageSummary['models']};
+}
+
+// Every workspace's usage for one month (YYYY-MM, UTC), for the admin's pilot view. Workspaces with no
+// activity that month are included so the table also shows who signed up and hasn't started.
+const skillOf="CASE WHEN task LIKE 'Speaking%' THEN 'Speaking' ELSE 'Writing' END";
+export async function adminUsage(month:string){
+  const db=database();const like=month+'%';
+  const [months,usage,saved,models]=await db.batch([
+    db.prepare('SELECT DISTINCT substr(created_at,1,7) AS month FROM usage_events ORDER BY month DESC LIMIT 24'),
+    db.prepare(`SELECT owner,
+        COUNT(DISTINCT CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Writing' THEN assessment_id END) AS writing,
+        COUNT(DISTINCT CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Speaking' THEN assessment_id END) AS speaking,
+        COALESCE(SUM(CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Writing' THEN cost_usd END),0) AS writingCost,
+        COALESCE(SUM(CASE WHEN assessment_id IS NOT NULL AND action IN ('transcribe','assess') AND ${skillOf}='Speaking' THEN cost_usd END),0) AS speakingCost,
+        COALESCE(SUM(cost_usd),0) AS cost,COALESCE(SUM(CASE WHEN platform = 1 THEN cost_usd END),0) AS platformCost,SUM(cost_usd IS NULL) AS unpriced,COUNT(*) AS requests
+      FROM usage_events WHERE created_at LIKE ? GROUP BY owner`).bind(like),
+    db.prepare(`SELECT owner,COUNT(*) AS saved,SUM(json_extract(data,'$.teacher_result') IS NOT NULL) AS reviewed FROM assessments WHERE created_at LIKE ? GROUP BY owner`).bind(like),
+    db.prepare(`SELECT ${skillOf} AS skill,provider,model,platform,COUNT(DISTINCT assessment_id) AS assessments,COALESCE(SUM(cost_usd),0) AS cost,SUM(cost_usd IS NULL) AS unpriced,
+        SUM(input_tokens) AS inputTokens,SUM(audio_tokens) AS audioTokens,SUM(output_tokens) AS outputTokens
+      FROM usage_events WHERE created_at LIKE ? AND assessment_id IS NOT NULL AND action IN ('transcribe','assess') GROUP BY skill,provider,model,platform ORDER BY skill DESC,assessments DESC`).bind(like),
+  ]);
+  type U={owner:string;writing:number;speaking:number;writingCost:number;speakingCost:number;cost:number;platformCost:number;unpriced:number;requests:number};
+  type S={owner:string;saved:number;reviewed:number};
+  return {
+    months:(months.results as {month:string}[]).map(m=>m.month),
+    usage:new Map((usage.results as U[]).map(u=>[u.owner,u])),
+    saved:new Map((saved.results as S[]).map(s=>[s.owner,s])),
+    models:models.results as ModelUsage[],
+  };
 }
