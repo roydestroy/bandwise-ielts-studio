@@ -9,7 +9,9 @@ import type {Assessment,Student} from '@/lib/ielts';
 import {z} from 'zod';
 export const dynamic='force-dynamic';
 const json=(d:unknown,status=200)=>Response.json(d,{status,headers:{'Cache-Control':'private, no-store'}});
-const parseRow=(row:any):Assessment=>({...JSON.parse(row.data),id:row.id,student_id:row.student_id,version:row.version,created_at:row.created_at});
+// An `assessments` row: the assessment itself is JSON in `data`.
+type AssessmentRow={id:string;student_id:string;data:string;version:number;created_at:string};
+const parseRow=(row:AssessmentRow):Assessment=>({...JSON.parse(row.data),id:row.id,student_id:row.student_id,version:row.version,created_at:row.created_at});
 
 // `origin` makes the logo URL absolute: the report is read in an email app, not on this site.
 async function report(owner:string,teacher:string,body:unknown,origin:string){
@@ -17,7 +19,7 @@ async function report(owner:string,teacher:string,body:unknown,origin:string){
   const db=database();
   const student=await db.prepare('SELECT id,name,email,target,min_band,track,created_at FROM students WHERE id = ? AND owner = ?').bind(id,owner).first<Student>();
   if(!student)throw new Error('Student not found.');
-  const [rows,branding]=await Promise.all([db.prepare('SELECT * FROM assessments WHERE owner = ? AND student_id = ?').bind(owner,id).all(),getBranding(owner)]);
+  const [rows,branding]=await Promise.all([db.prepare('SELECT * FROM assessments WHERE owner = ? AND student_id = ?').bind(owner,id).all<AssessmentRow>(),getBranding(owner)]);
   return {student,report:buildProgressReport({student,assessments:rows.results.map(parseRow),teacher,note,brand:reportBrand(branding,origin)})};
 }
 

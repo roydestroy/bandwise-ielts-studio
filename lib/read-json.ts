@@ -1,5 +1,7 @@
 // When the Access sign-in has ended or the Worker itself fails, Cloudflare answers with an HTML page instead of the app's JSON.
-export async function readJson(r:Response):Promise<any>{
+// Every API reply can carry an error or a message; callers name the rest of the shape they expect.
+export type ApiReply={error?:string;message?:string};
+export async function readJson<T extends object=ApiReply>(r:Response):Promise<T&ApiReply>{
   const text=await r.text();
   try{return JSON.parse(text);}catch{}
   if(r.status===413)throw new Error('This request is too large. Use smaller files and try again.');

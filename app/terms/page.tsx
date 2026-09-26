@@ -1,5 +1,4 @@
 import type {Metadata} from 'next';
-import Link from 'next/link';
 import LegalPage from '../legal-page';
 import {OPERATOR,CONTACT_EMAIL} from '@/lib/legal';
 
@@ -18,7 +17,7 @@ export default function Terms(){
 
     <h2>3. Your content and your students’ data</h2>
     <p>You keep all rights to the content you add. You allow us to store and process it only as needed to provide Bandwise to you, including sending it to the AI provider you choose when you ask for an assessment.</p>
-    <p>You confirm that you have the right to add your students’ information and work, including any consent needed from students or, for children, their parents or guardians. You must only upload material you have the right to use, and must not upload copyrighted test content (such as full Cambridge test papers or audio) unless you are allowed to. How we handle personal data is explained in our <Link href="/privacy">Privacy Policy</Link>.</p>
+    <p>You confirm that you have the right to add your students’ information and work, including any consent needed from students or, for children, their parents or guardians. You must only upload material you have the right to use, and must not upload copyrighted test content (such as full Cambridge test papers or audio) unless you are allowed to. How we handle personal data is explained in our <a href="/privacy">Privacy Policy</a>.</p>
 
     <h2>4. AI providers and your own keys</h2>
     <p>If you connect your own AI provider key, that provider’s terms apply to your use of it, and the provider bills you directly for its charges. We are not responsible for third-party services, their availability or their charges.</p>

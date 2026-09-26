@@ -13,6 +13,7 @@ export default function LoginForm({google,email:emailEnabled}:{google:boolean;em
   const [busy,setBusy]=useState<''|'google'|'send'|'verify'>('');const [error,setError]=useState('');
   const withGoogle=async()=>{setBusy('google');setError('');const {error}=await client.signIn.social({provider:'google',callbackURL:'/app',errorCallbackURL:'/login?error=google'});if(error){setError(message(error,'Google sign-in failed. Please try again.'));setBusy('')}};
   const send=async(e:React.FormEvent)=>{e.preventDefault();setBusy('send');setError('');const {error}=await client.emailOtp.sendVerificationOtp({email:email.trim(),type:'sign-in'});setBusy('');if(error)setError(message(error,'We couldn’t send a code. Check the address and try again.'));else{setSent(true);setCode('');}};
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full page load, so the server sees the new session cookie
   const verify=async(e:React.FormEvent)=>{e.preventDefault();setBusy('verify');setError('');const {error}=await client.signIn.emailOtp({email:email.trim(),otp:code.trim()});if(error){setBusy('');setError(message(error,'That code didn’t work. Check it, or send a new one.'));}else window.location.assign('/app');};
   return <div className="auth-form">
     {error&&<div className="notice error" role="alert">{error}</div>}

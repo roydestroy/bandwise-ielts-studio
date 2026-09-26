@@ -48,7 +48,7 @@ Add it to GitHub under **Settings → Secrets and variables → Actions → Secr
    - Terms of service: `https://bandwiseapp.com/terms`
    - Authorised domains: **`bandwiseapp.com`**. Remove `eurognosi-remote.com` if you added it.
    - Scopes: only `openid`, `email` and `profile`. These are non-sensitive, so Google needs no security review.
-   - Leave the logo empty unless you want it shown. A logo triggers Google's brand review.
+   - App logo: upload `public/logo/bandwise-logo-google-120.png` (120×120, full square). Google shows the logo only after its brand review, which needs the verified domain, home page and privacy policy above.
    - **Audience:** publishing status **In production**. In "Testing", only listed test users can sign in.
 3. **Clients → Create client → Web application** (or edit the one you made):
    - Authorised JavaScript origin: `https://bandwiseapp.com`

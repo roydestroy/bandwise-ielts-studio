@@ -4,7 +4,7 @@ import {verifyTeacher} from '../lib/access';
 import {recordAccessIdentity} from '../lib/workspaces';
 
 // The Worker's entry: the vinext app, behind a redirect to the canonical address (lib/canonical-host.ts).
-export default {
+const worker={
   async fetch(request:Request,env:Cloudflare.Env,ctx:ExecutionContext):Promise<Response>{
     const redirect=canonicalRedirect(new URL(request.url),request.method,env.CANONICAL_HOST);
     if(redirect){
@@ -20,3 +20,4 @@ export default {
     return app.fetch(request,env,ctx);
   },
 };
+export default worker;
