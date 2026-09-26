@@ -19,6 +19,8 @@ for(const name of ['PLATFORM_AI_TEST_USERS','PLATFORM_GEMINI_MODEL'])if(process.
 // Bandwise sign-in (lib/auth.ts, docs/SIGN_IN_SETUP.md). Secrets are installed by scripts/deploy.mjs.
 const site=process.env.BETTER_AUTH_URL||(config.routes?.[0]?.custom_domain?'https://'+config.routes[0].pattern:'');
 if(site)config.vars.BETTER_AUTH_URL=site.replace(/\/$/,'');
+// The first route is the site's address; the Worker redirects every other hostname to it (lib/canonical-host.ts).
+if(config.routes?.[0]?.custom_domain)config.vars.CANONICAL_HOST=config.routes[0].pattern;
 for(const name of ['GOOGLE_CLIENT_ID','ADMIN_EMAILS','EMAIL_FROM'])if(process.env[name])config.vars[name]=process.env[name].trim();
 // Cloudflare Email Service. Only bound once a sender is configured: the binding needs the domain onboarded first.
 if(process.env.EMAIL_FROM)config.send_email=[{name:'EMAIL'}];else delete config.send_email;

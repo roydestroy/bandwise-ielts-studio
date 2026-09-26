@@ -37,7 +37,23 @@ export async function recordAccessIdentity(email:string,workspaceId:string){
     db.prepare('INSERT OR IGNORE INTO workspaces (id,status,created_at,approved_at) VALUES (?,?,?,?)').bind(workspaceId,'active',at,at),
     db.prepare('INSERT INTO access_identities (email,workspace_id,last_seen) VALUES (?,?,?) ON CONFLICT(email) DO UPDATE SET workspace_id=excluded.workspace_id,last_seen=excluded.last_seen').bind(email.toLowerCase(),workspaceId,at),
   ]);
+  await relinkEmptyAccount(email,workspaceId);
   recorded.add(key);
+}
+
+// Someone who signed in with Google or a code before their email was linked got a new, empty workspace. Once
+// Access proves the same email owns an existing workspace, move their account there, as long as the new one
+// holds no students or assessments, and drop the empty workspace.
+async function relinkEmptyAccount(email:string,workspaceId:string){
+  const db=database();
+  const m=await db.prepare('SELECT m.user_id,m.workspace_id FROM auth_user u JOIN memberships m ON m.user_id = u.id WHERE lower(u.email) = ? AND u.email_verified = 1').bind(email.toLowerCase()).first<{user_id:string;workspace_id:string}>();
+  if(!m||m.workspace_id===workspaceId)return;
+  const used=await db.prepare('SELECT (SELECT COUNT(*) FROM students WHERE owner = ?) + (SELECT COUNT(*) FROM assessments WHERE owner = ?) AS n').bind(m.workspace_id,m.workspace_id).first<{n:number}>();
+  if(used?.n)return;
+  await db.batch([
+    db.prepare('UPDATE memberships SET workspace_id = ? WHERE user_id = ? AND workspace_id = ?').bind(workspaceId,m.user_id,m.workspace_id),
+    db.prepare('DELETE FROM workspaces WHERE id = ? AND NOT EXISTS (SELECT 1 FROM memberships WHERE workspace_id = ?)').bind(m.workspace_id,m.workspace_id),
+  ]);
 }
 
 export function isAdminEmail(email:string){
