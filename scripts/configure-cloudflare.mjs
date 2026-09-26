@@ -24,5 +24,10 @@ if(config.routes?.[0]?.custom_domain)config.vars.CANONICAL_HOST=config.routes[0]
 for(const name of ['GOOGLE_CLIENT_ID','ADMIN_EMAILS','EMAIL_FROM'])if(process.env[name])config.vars[name]=process.env[name].trim();
 // Cloudflare Email Service. Only bound once a sender is configured: the binding needs the domain onboarded first.
 if(process.env.EMAIL_FROM)config.send_email=[{name:'EMAIL'}];else delete config.send_email;
+// Say which optional settings reached this deploy (names only, never values), so a setting saved in the
+// wrong place shows up here instead of as a missing feature on the site.
+const has=name=>process.env[name]?'set':'missing';
+console.log('Optional settings: '+['BETTER_AUTH_SECRET','GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ADMIN_EMAILS','EMAIL_FROM','PLATFORM_GEMINI_API_KEY','PLATFORM_AI_TEST_USERS'].map(n=>n+' '+has(n)).join(', '));
+if(!!process.env.GOOGLE_CLIENT_ID!==!!process.env.GOOGLE_CLIENT_SECRET)console.warn('Warning: Google sign-in needs both GOOGLE_CLIENT_ID (a variable) and GOOGLE_CLIENT_SECRET (a secret). It stays off until both are set.');
 writeFileSync('wrangler.json',JSON.stringify(config,null,2)+'\n');
 console.log('Cloudflare resource bindings configured. No secrets were written to the config.');
