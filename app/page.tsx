@@ -36,7 +36,18 @@ const reportCriteria=[
 const progress=[['Test 1','5.5'],['Test 2','6.0'],['Test 3','6.5']] as const;
 // A made-up teacher brand for the samples, in a colour unlike Bandwise's to show it is theirs.
 const sampleBrand={name:'Northside English',contact:'northside-english.example',color:'#7a2e5c'};
-const BrandMark=()=><div className="lp-brandmark"><span style={{background:sampleBrand.color}}>N</span><div><b style={{color:sampleBrand.color}}>{sampleBrand.name}</b><small>{sampleBrand.contact}</small></div></div>;
+// A sample logo: a north-pointing compass needle in a rounded tile, beside a two-line wordmark.
+const BrandMark=()=><div className="lp-brandmark">
+  <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+    <rect width="40" height="40" rx="11" fill="#6f2853"/>
+    <circle cx="20" cy="20" r="13" fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth="1.4"/>
+    <path d="M20 8.5 25.2 21.5H14.8Z" fill="#fff"/>
+    <path d="M14.8 21.5H25.2L20 31.5Z" fill="#fff" fillOpacity=".45"/>
+    <circle cx="20" cy="21.5" r="1.7" fill="#5e2146"/>
+  </svg>
+  <div><b>Northside</b><span>ENGLISH</span></div>
+  <small>{sampleBrand.contact}</small>
+</div>;
 
 const faqs=[
   ['Is this an official IELTS score?','No. Bandwise gives a practice estimate to support your own judgement. You review, adjust and confirm every score before a student sees it.'],

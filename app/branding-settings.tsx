@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {toast} from 'sonner';
+import {Image as ImageIcon} from 'lucide-react';
 import {readJson} from '@/lib/read-json';
 import {DEFAULT_BRAND_COLOR,LOGO_MAX_BYTES,contrastWithWhite,type ReportBrand} from '@/lib/branding';
 
@@ -67,7 +68,7 @@ function BrandingForm({brand,saved}:{brand:ReportBrand|null;saved:(b:ReportBrand
       <h2>Preview</h2>
       <p className="muted">How the top of a report looks.</p>
       <div className="brand-sample" style={{borderTopColor:readable?color:DEFAULT_BRAND_COLOR}}>
-        {shownLogo&&<img src={shownLogo} alt=""/>}
+        {shownLogo?<img src={shownLogo} alt=""/>:<span className="brand-sample-placeholder"><ImageIcon size={18}/>Your logo</span>}
         <strong style={{color:readable?color:DEFAULT_BRAND_COLOR}}>{name||'Your name or school'}</strong>
         {contact&&<small>{contact}</small>}
         <span className="brand-sample-eyebrow" style={{color:readable?color:DEFAULT_BRAND_COLOR}}>IELTS PROGRESS REPORT</span>
