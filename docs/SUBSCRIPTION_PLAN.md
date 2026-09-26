@@ -6,10 +6,10 @@ A working plan for making Bandwise a public, paid product: hosted AI instead of 
 
 | Area | Today | Why it blocks a paid product |
 | --- | --- | --- |
-| Sign-in | Cloudflare Access in front of the whole hostname, with a hand-maintained email allowlist (`app/access-auth.ts`, `lib/access.ts`). | Nobody can sign themselves up, and no page is public. Zero Trust is free for 50 users, then about **$7 per user per month**, which is more than a cheap plan would bring in. |
+| Sign-in | Cloudflare Access in front of the whole hostname, with a hand-maintained email allowlist (`app/access-auth.ts`, `lib/access.ts`). Live: 4 allowed emails, 2 seats used, login by one-time PIN or Cloudflare account, 24 h sessions. | Nobody can sign themselves up, and no page is public. Zero Trust is free for 50 users, then about **$7 per user per month**, which is more than a cheap plan would bring in. |
 | AI | Each teacher pastes their own OpenAI / Gemini / Claude / Qwen key, which is stored encrypted (`lib/provider-store.ts`). There is already a site-wide `OPENAI_API_KEY` fallback. | Most teachers won't create an API account. There is no metering or per-user limit. |
 | Pages | One client page, `app/page.tsx`, is the whole studio. | There is no landing page, pricing page or legal pages. |
-| Data model | Every row is keyed by `owner` = the Access user ID. | There is no concept of an account, plan, seat or usage. |
+| Data model | Every row is keyed by `owner` = the Access user ID. Live: one owner, 1 student, 10 assessments, ≈ 0.16 MB in D1 and ≈ 17 MB in R2. | There is no concept of an account, plan, seat or usage. |
 | Billing, email, abuse protection | None. Reports go out through each teacher's own SMTP mailbox. | The service needs payments, receipts, sign-up email, bot protection and rate limits. |
 
 Most of the app can stay as it is. Nearly everything is already keyed by `owner`, and the AI layer already supports several providers behind a single `generate()` function. The work is mostly new code around the existing studio, not a rewrite.
@@ -53,7 +53,7 @@ Output tokens are about 80% of the cost. Capping the model's reasoning budget ("
 ### Recommendation
 
 1. **Make Gemini Flash the default house model for everything.** It covers audio, PDFs and images from one vendor, and the adapter already exists. Keep one other provider as an automatic **fallback** (OpenAI, already implemented) for outages.
-2. **Before choosing, test accuracy against real marks.** The database already stores the AI estimate (`result`) next to the teacher's final marks (`teacher_result`) for every reviewed assessment. That is a ready-made test set. Rerun the same 30–50 reviewed essays and recordings through Flash, Flash-Lite and Sonnet, and compare the mean absolute band error for each criterion. Choose the cheapest model within about 0.5 band of the teacher. Bandwise is only worth paying for if its marks are close to a teacher's.
+2. **Before choosing, test accuracy against real marks.** The database already stores the AI estimate (`result`) next to the teacher's final marks (`teacher_result`) for every reviewed assessment. That is a ready-made test set, but it is still small: on 2026-09-26 the live database held only **6** assessments with teacher marks (all Academic). Keep marking real work through Bandwise until there are 30–50, split across writing and speaking. Rerun the same 30–50 reviewed essays and recordings through Flash, Flash-Lite and Sonnet, and compare the mean absolute band error for each criterion. Choose the cheapest model within about 0.5 band of the teacher. Bandwise is only worth paying for if its marks are close to a teacher's.
 3. **Keep bring-your-own-key as an option** (a cheaper plan, or a setting on any plan). It costs nothing to keep, because the code already exists.
 4. Send provider calls through **Cloudflare AI Gateway**. It adds logs, cost analytics, per-gateway rate limits and provider fallback with no new infrastructure. You only change the base URL in `lib/provider-adapters.ts`.
 
@@ -159,15 +159,16 @@ Changes:
 
 | Change | Why |
 | --- | --- |
-| **Workers Paid plan** ($5/mo base) | The free plan's 10 ms CPU limit is already a known problem (README step 5). Paid also gives higher D1/R2 limits and 30-day D1 Time Travel for restores. |
+| **Keep Workers Paid** ($5/mo base). It was subscribed on 2026-09-25 but is **set to cancel on 2026-10-01**: undo the cancellation now. | The free plan's 10 ms CPU limit is already a known problem (README step 5), and the Worker has no R2 signed-link secrets to work around it. Paid also gives higher D1/R2 limits and 30-day D1 Time Travel for restores (7 days on Free). |
 | Narrow the **Access** application to `/admin` (after the auth switch) | Access would otherwise cost $7 per user above 50 users, and blocks the public pages. |
 | **AI Gateway** `bandwise` | Logs, spend analytics, rate limits and provider fallback for the platform keys. |
-| **Turnstile** widget | Bot protection on sign-up and login |
-| **Rate Limiting** binding in `wrangler.json` | Per-workspace AI request limits |
+| **Turnstile** widget (none exist yet) | Bot protection on sign-up and login |
+| **Rate Limiting** binding in `wrangler.json` (no rate-limit rules exist on the zone either) | Per-workspace AI request limits |
 | **Staging environment**: a Worker `bandwise-staging` with its own D1/R2 and Stripe *test mode*, deployed from PRs or a `staging` branch | Billing and auth changes must never be tested on production data |
-| **EU data location**: for new resources use D1 location hint `weur` and R2 jurisdiction `eu` (existing ones can't be moved in place; check where they are) | GDPR, and schools will ask |
-| **Cron Trigger** (daily) | Delete expired accounts, reconcile credits against Stripe, clean up orphaned files |
-| **Web Analytics** on the landing page | Cookieless, so no cookie banner is needed for analytics |
+| **EU data location**: the existing D1 database and R2 bucket are in `EEUR` (Eastern Europe) **without** an EU jurisdiction, i.e. a location hint, not a guarantee. Create D1 `bandwise` with jurisdiction `eu` and an R2 bucket with jurisdiction `eu`, and copy the data across **before launch**, while it is tiny (one teacher, ≈ 17 MB). The staging environment should use EU jurisdiction from the start. | GDPR, and schools will ask. Resources can't be moved in place, and the move only gets harder as data grows. |
+| **Cron Trigger** (daily) — Bandwise has none today (the only cron on the account belongs to the unrelated `classroom-files-cleanup` Worker) | Delete expired accounts, reconcile credits against Stripe, clean up orphaned files, export a D1 backup |
+| **Web Analytics** on the landing page (a site with automatic setup already exists for `eurognosi-remote.com`; add or confirm coverage for the Bandwise hostname) | Cookieless, so no cookie banner is needed for analytics |
+| **Zone hardening** on `eurognosi-remote.com`: Always Use HTTPS on (currently off), minimum TLS 1.2 (currently 1.0), SSL mode Full (strict) (currently Full) | Expected of a paid service; the zone is shared with other Eurognosi sites, so check those still work |
 | **New Worker secrets** | `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PLATFORM_GEMINI_API_KEY`, `PLATFORM_OPENAI_API_KEY`, `TURNSTILE_SECRET_KEY`, email API key. Add them to `scripts/deploy.mjs` and the GitHub workflow the same way `PROVIDER_ENCRYPTION_KEY` is handled. |
 
 Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside the included usage, plus about $0 for AI Gateway, Turnstile and Web Analytics. AI and payment fees grow with revenue.
@@ -188,7 +189,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 
 | Phase | Outcome | Main work |
 | --- | --- | --- |
-| **0. Decide and prepare** | Choices made, accounts applied for | Fill in `INFRASTRUCTURE.md` from the live account. Register the business, apply for Stripe Managed Payments. Choose plan prices. |
+| **0. Decide and prepare** | Choices made, accounts applied for | ~~Fill in `INFRASTRUCTURE.md` from the live account~~ (done 2026-09-26). Undo the Workers Paid cancellation. Move D1/R2 to EU jurisdiction. Register the business, apply for Stripe Managed Payments. Choose plan prices. |
 | **1. Public landing page** | `/` is public, the studio is at `/app` | Marketing pages, narrow the Access paths, waitlist form, Web Analytics. |
 | **2. Hosted AI and metering** | Existing teachers work without their own keys, and real costs are known | `usage_events`, platform Gemini key via AI Gateway, OpenAI fallback, the accuracy test against teacher marks. |
 | **3. Self-service accounts** | Anyone can sign up and get a free trial | Better Auth, workspaces, migration of existing teachers, Turnstile, transactional email, staging environment. |
@@ -200,6 +201,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | Date | Decision | Notes |
 | --- | --- | --- |
 | 2026-09-26 | Plan drafted | Nothing decided yet. The recommendations above are proposals. |
+| 2026-09-26 | Live account checked | Workers Paid is already on but cancels 2026-10-01; D1/R2 are in `EEUR` without EU jurisdiction; only 6 teacher-marked assessments exist. Plan updated in §1, §5 and the roadmap. See `INFRASTRUCTURE.md`. |
 
 ## Sources (checked 2026-09-26)
 
