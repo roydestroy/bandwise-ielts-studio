@@ -214,6 +214,7 @@ Expected fixed monthly cost at launch: Workers Paid $5, plus D1/R2 well inside t
 | 2026-09-26 | Free Gemini key until launch | No AI spend before launch. The free tier lets Google use requests to improve its products, so Bandwise AI stays in test mode (named testers, sample work only) until a paid key replaces it. Teachers keep using their own keys meanwhile. |
 | 2026-09-26 | Teacher branding on reports | Teachers put their own name, logo and colour on printed and emailed reports, with a small "Made with Bandwise" line. This is a selling point for tutors and schools, and later a possible plan feature (e.g. removing the Bandwise line on School plans). |
 | 2026-09-26 | Sign-in: Google + email code, approval required | New accounts wait for admin approval while there is no billing. Emails go through Cloudflare Email Service; on the free Workers plan it only reaches verified addresses, so testers are verified by hand until Workers Paid is back. The app moved to zod 4, which Better Auth requires. |
+| 2026-09-26 | Own domain: bandwiseapp.com; keep the name Bandwise | Moved before sign-in went live, because Google OAuth, Search Console, Email Service, cookies and emailed logo links are all tied to the hostname. `bandwise.com`/`.app` are taken (Bandwise LLC, a US web agency). Trademark mirrors show no live BANDWISE mark in the US or EU, so the name stays. Consider an EU trademark filing before launch. |
 
 ## Sources (checked 2026-09-26)
 

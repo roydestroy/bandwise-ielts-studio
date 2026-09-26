@@ -169,7 +169,7 @@ For deployment from your computer, supply the same Cloudflare settings as enviro
 - Qwen PDF conversion: `lib/render-pdf.client.ts`. PDF.js assets are copied locally during build; no conversion service receives your files.
 - Authentication: `app/access-auth.ts` (who is signed in), `lib/auth.ts` (Google and email-code sign-in), `lib/workspaces.ts` (workspaces, approval, linking Access users), `lib/access.ts` (Cloudflare Access JWTs). Pages: `app/login/`, `app/app/admin/`.
 - Storage schema: `db/schema.ts`; committed migrations: `drizzle/`.
-- Cloudflare resources: `wrangler.json`; deployment: `.github/workflows/cloudflare.yml`.
+- Cloudflare resources: `wrangler.json`. The Worker entry is `worker/index.ts`, which redirects every hostname except the first route (`bandwiseapp.com`) there. Deployment: `.github/workflows/cloudflare.yml`.
 
 Use a branch and pull request for changes. Migrations must be additive where possible; do not rewrite SQL files already applied to a live database. The existing application logic and AI models are preserved from the source version; model availability may vary by account and region.
 
