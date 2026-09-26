@@ -1,6 +1,7 @@
 import {env} from 'cloudflare:workers';
 import {database} from './storage';
-import {inEmailList} from './email-list';
+import {inEmailList,emailList} from './email-list';
+import {sendSystemEmail,systemEmailReady,newSignUpEmail} from './system-email';
 
 // A workspace owns a teacher's students, assessments and settings: its ID is the `owner` on every row.
 export type WorkspaceStatus='pending'|'active'|'suspended';
@@ -10,7 +11,7 @@ const now=()=>new Date().toISOString();
 // The workspace of a signed-in user, created on first sign-in. A verified email that signed in through
 // Cloudflare Access before is linked to that existing, already-approved workspace; anyone else starts a new
 // workspace that waits for an admin's approval (admins' own included, unless their email is in ADMIN_EMAILS).
-export async function workspaceForUser(user:{id:string;email:string;emailVerified:boolean}):Promise<Workspace>{
+export async function workspaceForUser(user:{id:string;email:string;emailVerified:boolean;name?:string|null}):Promise<Workspace>{
   const db=database();
   const find=()=>db.prepare('SELECT w.id,w.status FROM memberships m JOIN workspaces w ON w.id = m.workspace_id WHERE m.user_id = ?').bind(user.id).first<Workspace>();
   const existing=await find();
@@ -21,12 +22,22 @@ export async function workspaceForUser(user:{id:string;email:string;emailVerifie
   const id=legacy?.workspace_id??crypto.randomUUID();const at=now();
   // Admins approve everyone else, so a verified admin email is approved from the start.
   const approved=!!legacy||(user.emailVerified&&isAdminEmail(user.email));
-  await db.batch([
+  const [, membership]=await db.batch([
     db.prepare('INSERT OR IGNORE INTO workspaces (id,status,created_at,approved_at) VALUES (?,?,?,?)').bind(id,approved?'active':'pending',at,approved?at:null),
     // Unique per user: two first requests at once both land on whichever membership was written first.
     db.prepare('INSERT OR IGNORE INTO memberships (user_id,workspace_id,role,created_at) VALUES (?,?,?,?)').bind(user.id,id,'owner',at),
   ]);
+  // Only the request that created the membership tells the admins, so a sign-up is announced once.
+  if(!approved&&membership.meta.changes)await notifyAdmins(user);
   return (await find())!;
+}
+
+// Email every admin that someone is waiting for approval. Best effort: a failed email never blocks the sign-in.
+async function notifyAdmins(user:{email:string;name?:string|null}){
+  const admins=emailList(env.ADMIN_EMAILS);
+  if(!admins.length||(!systemEmailReady()&&!import.meta.env.DEV))return;
+  const adminUrl=new URL('/app/admin',env.BETTER_AUTH_URL||'https://bandwiseapp.com').toString();
+  await Promise.allSettled(admins.map(to=>sendSystemEmail(newSignUpEmail(to,user,adminUrl))));
 }
 
 // Remember which email reached which workspace through Cloudflare Access, so the move to Bandwise's own sign-in

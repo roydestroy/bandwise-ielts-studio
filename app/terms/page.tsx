@@ -21,12 +21,14 @@ export default function Terms(){
 
     <h2>4. AI providers and your own keys</h2>
     <p>If you connect your own AI provider key, that provider’s terms apply to your use of it, and the provider bills you directly for its charges. We are not responsible for third-party services, their availability or their charges.</p>
+    <p>If we offer the built-in “Bandwise AI” option to your account, it comes with a monthly allowance of credits (currently 1 credit for a writing assessment and 3 for a speaking test). When the allowance runs out, Bandwise AI is paused until it renews at the start of the next month; you can still use your own key. We may change the allowance, and will show your current allowance in the app.</p>
 
     <h2>5. Acceptable use</h2>
     <p>Don’t use Bandwise to break the law or others’ rights, to upload harmful code, to try to access other teachers’ data, to overload or probe the service, or to resell it without our agreement. We may suspend accounts that do.</p>
 
     <h2>6. Early access and pricing</h2>
     <p>Bandwise is in early access. Features may change, and there may be interruptions. There is currently no charge from us. If we introduce paid plans, we will tell you in advance, and you won’t be charged unless you choose a paid plan.</p>
+    <p>During early access we may ask for your feedback, including what you would pay for Bandwise. Answering is optional, and your answers help us set fair prices; they do not commit you to anything.</p>
 
     <h2>7. Availability and liability</h2>
     <p>We work to keep Bandwise available and your data safe, but we provide it “as is”, without guarantees that it will be uninterrupted or error-free. Keep your own copies of anything important. To the extent the law allows, we are not liable for indirect or consequential losses, or for decisions made on the basis of practice estimates. Nothing in these terms limits liability that cannot be limited by law, or your rights as a consumer.</p>

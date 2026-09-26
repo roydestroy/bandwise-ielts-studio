@@ -20,7 +20,8 @@ export default function Privacy(){
       <li><b>Sign-in and security data:</b> session records, one-time sign-in codes (kept for 10 minutes), and the IP address and browser type of each session, used to keep accounts secure and to limit abuse.</li>
       <li><b>Content you add:</b> students’ names, email addresses, target bands and test types; essays, photos, PDFs and speaking recordings; transcripts, scores, feedback and your notes.</li>
       <li><b>Settings:</b> AI provider keys and email (SMTP) passwords you choose to save, which we encrypt before storing; your report branding, including any logo you upload.</li>
-      <li><b>Usage records:</b> for each AI request, the provider, model, number of tokens used and an estimated cost.</li>
+      <li><b>Usage records:</b> for each AI request, the provider, model, number of tokens used and an estimated cost; and how many Bandwise AI credits you have used this month.</li>
+      <li><b>Feedback you give:</b> if you answer our early-access survey, your answers about pricing and time saved, and any comments, linked to your account.</li>
     </ul>
 
     <h2>3. Information from Google</h2>
@@ -31,7 +32,8 @@ export default function Privacy(){
     <ul>
       <li>To provide Bandwise: store your workspace, run the assessments you ask for, produce reports and send them when you choose.</li>
       <li>To run your account: sign-in codes, approval of new accounts, and messages about your account.</li>
-      <li>To keep the service secure and working, and to understand costs so we can price it fairly.</li>
+      <li>To keep the service secure and working, and to understand costs so we can price it fairly, including from survey answers you choose to give.</li>
+      <li>To check how close AI estimates are to teachers’ own marks, using the bands on assessments teachers have reviewed, so we can improve accuracy.</li>
     </ul>
     <p>Our legal bases are performing our contract with you, our legitimate interest in running a secure and reliable service, and complying with legal obligations. We do not sell personal data, do not show advertising, and do not use your content to train AI models.</p>
 
@@ -39,7 +41,7 @@ export default function Privacy(){
     <ul>
       <li><b>Cloudflare</b> hosts Bandwise and stores its database and files, and delivers Bandwise’s own emails (sign-in codes, account approval).</li>
       <li><b>Google</b> provides “Continue with Google” sign-in.</li>
-      <li><b>The AI provider you choose</b> (OpenAI, Google Gemini, Anthropic Claude or Alibaba Qwen) receives the student work, prompt and rubric needed for a transcription or assessment, <b>only when you request one</b>. With your own API key, that provider processes it under your agreement with them. With the built-in “Bandwise AI” option, it is processed by Google Gemini under our account. While that option is in test mode it may run on Google’s free tier, where Google can use submitted content to improve its products, so it is limited to named testers using sample work.</li>
+      <li><b>The AI provider you choose</b> (OpenAI, Google Gemini, Anthropic Claude or Alibaba Qwen) receives the student work, prompt and rubric needed for a transcription or assessment, <b>only when you request one</b>. With your own API key, that provider processes it under your agreement with them. With the built-in “Bandwise AI” option, it is processed by Google Gemini under our account, on Google’s paid service, where Google does not use submitted content to improve its products or train its models. During early testing, Bandwise AI may instead run on Google’s free tier, where Google can use submitted content that way; while that is the case it is offered only to named testers, for sample work, and the studio says so.</li>
       <li><b>Your own email provider</b> sends the progress reports you email to students, through the mailbox you connect.</li>
     </ul>
     <p>Some of these providers may process data outside the European Economic Area. Where they do, they rely on safeguards recognised under EU law, such as the European Commission’s Standard Contractual Clauses.</p>

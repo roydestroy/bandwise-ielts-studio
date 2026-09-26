@@ -35,3 +35,9 @@ export function approvedEmail(to:string,url:string):SystemEmail{
     text:`Your Bandwise account has been approved. Sign in at ${url}`,
     html:frame(`<p style="margin:0 0 14px;font-size:15px">Your Bandwise account has been approved. You can start adding students and assessing their work.</p><p style="margin:0"><a href="${esc(url)}" style="display:inline-block;background:#145e50;color:#fff;text-decoration:none;padding:11px 18px;border-radius:7px;font-weight:bold;font-size:14px">Open Bandwise</a></p>`)};
 }
+export function newSignUpEmail(to:string,who:{email:string;name?:string|null},adminUrl:string):SystemEmail{
+  const label=who.name?who.name+' ('+who.email+')':who.email;
+  return {to,subject:'New Bandwise sign-up: '+who.email,
+    text:`${label} has signed up and is waiting for approval.\n\nApprove or pause accounts at ${adminUrl}`,
+    html:frame(`<p style="margin:0 0 14px;font-size:15px"><b>${esc(label)}</b> has signed up and is waiting for your approval.</p><p style="margin:0"><a href="${esc(adminUrl)}" style="display:inline-block;background:#145e50;color:#fff;text-decoration:none;padding:11px 18px;border-radius:7px;font-weight:bold;font-size:14px">Open the admin panel</a></p>`)};
+}

@@ -73,6 +73,7 @@ Output tokens are about 80% of the cost. Capping the model's reasoning budget ("
 - [x] **Accuracy report** (built 2026-09-26). **Admin panel → Accuracy** compares the AI's bands with the teacher's for every reviewed assessment, per skill, criterion and model (`lib/accuracy.ts`): average difference, share within half a band, and which way the AI leans. It flags when fewer than 30 are reviewed.
 - [x] **Pilot survey** (built 2026-09-26). **Settings → Feedback** asks the four Van Westendorp price questions and hours saved a week (`pilot_feedback`, migration `0008`). Teachers with three AI-marked assessments are invited on their overview. Medians and answers are under **Admin panel → Feedback**. Remove the tab and the invitation at launch.
 - [x] **Sample student** (built 2026-09-26). A new teacher can add "Sample student (Eleni)" with a ready AI-marked essay (`lib/sample.ts`), then remove it from **Students**. It uses no credits and is left out of the accuracy report.
+- [x] **Pilot readiness** (built 2026-09-26). New teachers who may use Bandwise AI start on it without choosing it in Settings. Admins get an email for every sign-up that needs approval. The privacy policy and terms cover the paid Gemini key, the credit allowance and the survey. A welcome message for pilot teachers is in `docs/PILOT_WELCOME.md`.
 
 ---
 
