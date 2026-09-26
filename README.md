@@ -2,6 +2,8 @@
 
 A standalone teacher workspace for IELTS practice across all four skills — writing, speaking, reading and listening. Manage the source in GitHub and deploy it to **Cloudflare Workers**. The database and uploads live in your Cloudflare account. No ChatGPT Sites account is needed to run it.
 
+> **Planning docs:** [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md) records every Cloudflare, GitHub and outside resource the app uses. [`docs/SUBSCRIPTION_PLAN.md`](docs/SUBSCRIPTION_PLAN.md) is the plan for turning Bandwise into a paid subscription service.
+
 This copy starts empty. It contains no test students, assessments, uploads, provider keys or credentials from the earlier hosted site.
 
 ## What is included
